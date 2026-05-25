@@ -405,8 +405,7 @@ export default function App() {
               <table className="modernTable">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Title</th>
+                    <th>Date</th>                    
                     <th>Flat</th>
                     <th>Category</th>
                     <th>Status</th>
@@ -436,13 +435,13 @@ export default function App() {
                         </div>
 
                       </td>
-
+{/*}
                       <td>
                         <div className="titleCell">
                           {r.title}
                         </div>
                       </td>
-
+*/}
                       <td>
                         <div className="flat">
                           {r.flat_no ||
@@ -956,17 +955,14 @@ select{
 }
 
 .flat{
-  color:#e8edc2;
+  color:#CBD5E1;
   font-size:12px;
   font-weight:400;
   white-space: nowrap;
 }
 
 .category{  
-   background:rgba(59,130,246,.14);
-  color:#93C5FD;
-  padding:8px 14px;
-  border-radius:999px;
+  color:#CBD5E1;
   font-size:12px;
   font-weight:400;
   white-space: nowrap;
