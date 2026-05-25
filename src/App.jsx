@@ -339,7 +339,7 @@ export default function App() {
               value={`₹${fmt(balance)}`}
               blue
             />
-
+  {/*}
             <Kpi
               icon={<PieChart size={18} />}
               label="Transactions"
@@ -347,6 +347,7 @@ export default function App() {
               purple
             />
           </div>
+  */}
 
                     {/* TABLE */}
 
@@ -762,7 +763,7 @@ body{
 .kpiGrid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:20px;
+  gap:16px;
   margin-top:28px;
 }
 
@@ -780,8 +781,7 @@ body{
   color:#94A3B8;
 }
 
-.kpiValue{
-  margin-top:20px;
+.kpiValue{  
   font-size:32px;
   font-weight:800;
 }
