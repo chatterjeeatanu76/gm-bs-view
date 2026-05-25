@@ -346,8 +346,10 @@ export default function App() {
               value={transactions.length}
               purple
             />
+*/}
+
           </div>
-  */}
+
 
                     {/* TABLE */}
 
