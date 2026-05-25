@@ -931,7 +931,7 @@ select{
 .modernTable{
   width:100%;
   border-collapse:separate;
-  border-spacing:0 14px;
+  border-spacing:0 8px;
 }
 
 .modernTable thead th{
@@ -967,26 +967,26 @@ select{
 .date{
   color:#CBD5E1;
   font-weight:400;
-  font-size:13px;
+  font-size:14px;
   white-space: nowrap;
 }
 
 .titleCell{
   font-weight:400;
-  font-size:13px;
+  font-size:14px;
   white-space: nowrap;
 }
 
 .flat{
   color:#CBD5E1;
-  font-size:13px;
+  font-size:14px;
   font-weight:400;
   white-space: nowrap;
 }
 
 .category{  
   color:#CBD5E1;
-  font-size:13px;
+  font-size:14px;
   font-weight:400;
   white-space: nowrap;
 }
@@ -994,7 +994,7 @@ select{
 .status{
   padding:8px 14px;
   border-radius:999px;
-  font-size:13px;
+  font-size:14px;
   font-weight:400;
   text-transform:capitalize;
 }
