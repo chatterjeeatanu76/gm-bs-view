@@ -310,70 +310,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* KPI */}
-
-          <div className="kpiGrid">
-            <Kpi
-              icon={<TrendingUp size={18} />}
-              label="Income"
-              value={`₹${fmt(totalIncome)}`}
-              green
-            />
-
-            <Kpi
-              icon={<TrendingDown size={18} />}
-              label="Expense"
-              value={`₹${fmt(totalExpense)}`}
-              red
-            />
-
-            <Kpi
-              icon={<Wallet size={18} />}
-              label="Balance"
-              value={`₹${fmt(balance)}`}
-              blue
-            />
-
-            <Kpi
-              icon={<PieChart size={18} />}
-              label="Transactions"
-              value={transactions.length}
-              purple
-            />
-          </div>
-
-          {/* CHARTS */}
-
-          <div className="chartGrid">
-            <div className="card">
-              <div className="cardTitle">
-                Financial Trend
-              </div>
-
-              <div className="chartWrap">
-                <Line
-                  data={lineData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio:
-                      false,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="cardTitle">
-                Expense Breakdown
-              </div>
-
-              <div className="chartWrap">
-                <Doughnut data={pieData} />
-              </div>
-            </div>
-          </div>
-
-          {/* TABLE */}
+                    {/* TABLE */}
 
           <div className="tableCard">
             <div className="tableHeader">
@@ -498,6 +435,71 @@ export default function App() {
               </table>
             </div>
           </div>
+
+          {/* KPI */}
+
+          <div className="kpiGrid">
+            <Kpi
+              icon={<TrendingUp size={18} />}
+              label="Income"
+              value={`₹${fmt(totalIncome)}`}
+              green
+            />
+
+            <Kpi
+              icon={<TrendingDown size={18} />}
+              label="Expense"
+              value={`₹${fmt(totalExpense)}`}
+              red
+            />
+
+            <Kpi
+              icon={<Wallet size={18} />}
+              label="Balance"
+              value={`₹${fmt(balance)}`}
+              blue
+            />
+
+            <Kpi
+              icon={<PieChart size={18} />}
+              label="Transactions"
+              value={transactions.length}
+              purple
+            />
+          </div>
+
+          {/* CHARTS */}
+
+          <div className="chartGrid">
+            <div className="card">
+              <div className="cardTitle">
+                Financial Trend
+              </div>
+
+              <div className="chartWrap">
+                <Line
+                  data={lineData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio:
+                      false,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="cardTitle">
+                Expense Breakdown
+              </div>
+
+              <div className="chartWrap">
+                <Doughnut data={pieData} />
+              </div>
+            </div>
+          </div>
+
+
         </main>
       </div>
     </>
