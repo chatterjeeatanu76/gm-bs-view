@@ -594,6 +594,27 @@ function SidebarItem({
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+
+
+
+.wix-madefor-text-<uniquifier> {
+  font-family: "Wix Madefor Text", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
+
+.quicksand-<uniquifier> {
+  font-family: "Quicksand", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
 *{
   margin:0;
   padding:0;
@@ -601,7 +622,7 @@ const css = `
 }
 
 body{
-  font-family:'Inter',sans-serif;
+  font-family: "Quicksand", sans-serif;
   background:#0F172A;
   color:#E2E8F0;
 }
@@ -946,26 +967,26 @@ select{
 .date{
   color:#CBD5E1;
   font-weight:400;
-  font-size:12px;
+  font-size:13px;
   white-space: nowrap;
 }
 
 .titleCell{
   font-weight:400;
-  font-size:12px;
+  font-size:13px;
   white-space: nowrap;
 }
 
 .flat{
   color:#CBD5E1;
-  font-size:12px;
+  font-size:13px;
   font-weight:400;
   white-space: nowrap;
 }
 
 .category{  
   color:#CBD5E1;
-  font-size:12px;
+  font-size:13px;
   font-weight:400;
   white-space: nowrap;
 }
@@ -973,7 +994,7 @@ select{
 .status{
   padding:8px 14px;
   border-radius:999px;
-  font-size:12px;
+  font-size:13px;
   font-weight:400;
   text-transform:capitalize;
 }
