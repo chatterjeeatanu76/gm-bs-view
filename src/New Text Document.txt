@@ -931,21 +931,20 @@ select{
 .date{
   color:#CBD5E1;
   font-weight:600;
-  font-size:12px;
 }
 
 .titleCell{
   font-weight:700;
-  font-size:12px;
 }
 
 .flat{
   color:#94A3B8;
-  font-size:12px;
 }
 
-.category{  
+.category{
+  background:rgba(59,130,246,.14);
   color:#93C5FD;
+  padding:8px 14px;
   border-radius:999px;
   font-size:12px;
   font-weight:700;
