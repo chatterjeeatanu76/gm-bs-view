@@ -940,8 +940,9 @@ select{
 }
 
 .flat{
-  color:#94A3B8;
+  color:#e8edc2;
   font-size:12px;
+  font-weight:700;
 }
 
 .category{  
