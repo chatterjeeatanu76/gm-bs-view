@@ -1,243 +1,196 @@
-import { useState, useEffect } from 'react'
-import { supabase } from './supabaseClient'
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "./supabaseClient";
+
+import {
+  LayoutDashboard,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Landmark,
+  PieChart,
+  Settings,
+  Search,
+  Bell,
+  Plus,
+} from "lucide-react";
 
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
-  ArcElement,
-  LineElement,
   PointElement,
+  LineElement,
+  ArcElement,
   Tooltip,
   Legend,
   Filler,
-} from 'chart.js'
+} from "chart.js";
 
-import { Bar, Doughnut, Line } from 'react-chartjs-2'
+import { Line, Doughnut } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement,
-  ArcElement,
-  LineElement,
   PointElement,
+  LineElement,
+  ArcElement,
   Tooltip,
   Legend,
   Filler
-)
-
-// ─────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────
-
-const fmt = (n) =>
-  new Intl.NumberFormat('en-IN').format(Number(n ?? 0))
+);
 
 const MONTHS = [
-  ['01', 'January'],
-  ['02', 'February'],
-  ['03', 'March'],
-  ['04', 'April'],
-  ['05', 'May'],
-  ['06', 'June'],
-  ['07', 'July'],
-  ['08', 'August'],
-  ['09', 'September'],
-  ['10', 'October'],
-  ['11', 'November'],
-  ['12', 'December'],
-]
+  ["01", "January"],
+  ["02", "February"],
+  ["03", "March"],
+  ["04", "April"],
+  ["05", "May"],
+  ["06", "June"],
+  ["07", "July"],
+  ["08", "August"],
+  ["09", "September"],
+  ["10", "October"],
+  ["11", "November"],
+  ["12", "December"],
+];
 
-// ─────────────────────────────────────────────────────────────
-// App
-// ─────────────────────────────────────────────────────────────
+const fmt = (n) =>
+  new Intl.NumberFormat("en-IN").format(Number(n || 0));
 
 export default function App() {
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [tab, setTab] = useState('overview')
+  const [search, setSearch] = useState("");
+  const [month, setMonth] = useState("");
 
-  const [incSearch, setIncSearch] = useState('')
-  const [incMonth, setIncMonth] = useState('')
-
-  const [expSearch, setExpSearch] = useState('')
-  const [expMonth, setExpMonth] = useState('')
-
-  // ───────────────────────────────────────────────────────────
-  // Fetch Transactions
-  // ───────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // FETCH
+  // ─────────────────────────────────────────────
 
   useEffect(() => {
     const load = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('date', { ascending: false })
+      const { data } = await supabase
+        .from("transactions")
+        .select("*")
+        .order("date", {
+          ascending: false,
+        });
 
-        if (error) throw error
+      setTransactions(data || []);
+      setLoading(false);
+    };
 
-        setTransactions(data ?? [])
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
+    load();
+  }, []);
 
-    load()
-  }, [])
+  // ─────────────────────────────────────────────
+  // FILTER
+  // ─────────────────────────────────────────────
 
-  // ───────────────────────────────────────────────────────────
-  // Split Income / Expense
-  // ───────────────────────────────────────────────────────────
-
-  const income = transactions.filter(
-    (item) => item.type === 'income'
-  )
-
-  const expenses = transactions.filter(
-    (item) => item.type === 'expense'
-  )
-
-  // ───────────────────────────────────────────────────────────
-  // KPI
-  // ───────────────────────────────────────────────────────────
-
-  const totalIncome = income.reduce(
-    (a, b) => a + Number(b.amount ?? 0),
-    0
-  )
-
-  const totalExpense = expenses.reduce(
-    (a, b) => a + Number(b.amount ?? 0),
-    0
-  )
-
-  const balance = totalIncome - totalExpense
-
-  const savingsRate =
-    totalIncome > 0
-      ? ((balance / totalIncome) * 100).toFixed(1)
-      : '0.0'
-
-  // ───────────────────────────────────────────────────────────
-  // Filters
-  // ───────────────────────────────────────────────────────────
-
-  const filterRows = (rows, search, month) =>
-    rows.filter((row) => {
+  const filtered = useMemo(() => {
+    return transactions.filter((row) => {
       const text = Object.values(row)
-        .join(' ')
-        .toLowerCase()
+        .join(" ")
+        .toLowerCase();
 
       return (
         (!search ||
           text.includes(search.toLowerCase())) &&
         (!month ||
-          (row.date ?? '').includes(`-${month}-`))
-      )
-    })
+          row.date?.includes(`-${month}-`))
+      );
+    });
+  }, [transactions, search, month]);
 
-  const filteredIncome = filterRows(
-    income,
-    incSearch,
-    incMonth
-  )
+  const income = transactions.filter(
+    (x) => x.type === "income"
+  );
 
-  const filteredExpenses = filterRows(
-    expenses,
-    expSearch,
-    expMonth
-  )
+  const expenses = transactions.filter(
+    (x) => x.type === "expense"
+  );
 
-  // ───────────────────────────────────────────────────────────
-  // Charts
-  // ───────────────────────────────────────────────────────────
+  const totalIncome = income.reduce(
+    (a, b) => a + Number(b.amount || 0),
+    0
+  );
 
-  const last6Months = MONTHS.slice(-6)
+  const totalExpense = expenses.reduce(
+    (a, b) => a + Number(b.amount || 0),
+    0
+  );
+
+  const balance = totalIncome - totalExpense;
+
+  // ─────────────────────────────────────────────
+  // CHARTS
+  // ─────────────────────────────────────────────
 
   const lineData = {
-    labels: last6Months.map(([, l]) =>
+    labels: MONTHS.slice(-6).map(([, l]) =>
       l.slice(0, 3)
     ),
 
     datasets: [
       {
-        label: 'Income',
-        data: last6Months.map(([m]) =>
+        label: "Income",
+
+        data: MONTHS.slice(-6).map(([m]) =>
           income
             .filter((r) =>
-              (r.date ?? '').includes(`-${m}-`)
+              r.date?.includes(`-${m}-`)
             )
             .reduce(
               (a, b) =>
-                a + Number(b.amount ?? 0),
+                a + Number(b.amount || 0),
               0
             )
         ),
 
-        borderColor: '#16a34a',
-        backgroundColor: 'rgba(22,163,74,0.1)',
+        borderColor: "#22c55e",
+        backgroundColor:
+          "rgba(34,197,94,.08)",
+
         fill: true,
         tension: 0.4,
       },
 
       {
-        label: 'Expense',
-        data: last6Months.map(([m]) =>
+        label: "Expense",
+
+        data: MONTHS.slice(-6).map(([m]) =>
           expenses
             .filter((r) =>
-              (r.date ?? '').includes(`-${m}-`)
+              r.date?.includes(`-${m}-`)
             )
             .reduce(
               (a, b) =>
-                a + Number(b.amount ?? 0),
+                a + Number(b.amount || 0),
               0
             )
         ),
 
-        borderColor: '#dc2626',
-        backgroundColor: 'rgba(220,38,38,0.1)',
+        borderColor: "#ef4444",
+        backgroundColor:
+          "rgba(239,68,68,.08)",
+
         fill: true,
         tension: 0.4,
       },
     ],
-  }
+  };
 
-  const barData = {
-    labels: ['Income', 'Expense', 'Balance'],
+  const expenseMap = expenses.reduce(
+    (acc, item) => {
+      acc[item.category] =
+        (acc[item.category] || 0) +
+        Number(item.amount);
 
-    datasets: [
-      {
-        data: [
-          totalIncome,
-          totalExpense,
-          balance,
-        ],
-
-        backgroundColor: [
-          '#16a34a',
-          '#dc2626',
-          '#2563eb',
-        ],
-
-        borderRadius: 10,
-      },
-    ],
-  }
-
-  const expenseMap = expenses.reduce((acc, item) => {
-    acc[item.category] =
-      (acc[item.category] ?? 0) +
-      Number(item.amount)
-
-    return acc
-  }, {})
+      return acc;
+    },
+    {}
+  );
 
   const pieData = {
     labels: Object.keys(expenseMap),
@@ -247,456 +200,843 @@ export default function App() {
         data: Object.values(expenseMap),
 
         backgroundColor: [
-          '#2563eb',
-          '#7c3aed',
-          '#16a34a',
-          '#dc2626',
-          '#f59e0b',
-          '#0f766e',
+          "#3B82F6",
+          "#8B5CF6",
+          "#22C55E",
+          "#F97316",
+          "#EF4444",
+          "#14B8A6",
         ],
       },
     ],
-  }
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-  }
-
-  // ───────────────────────────────────────────────────────────
-  // Loading / Error
-  // ───────────────────────────────────────────────────────────
+  };
 
   if (loading) {
     return (
-      <div style={styles.center}>
-        Loading...
+      <div className="loader">
+        Loading dashboard...
       </div>
-    )
+    );
   }
-
-  if (error) {
-    return (
-      <div style={styles.center}>
-        <div>
-          <h3>⚠️ Could not load data</h3>
-          <p>{error}</p>
-        </div>
-      </div>
-    )
-  }
-
-  // ───────────────────────────────────────────────────────────
-  // UI
-  // ───────────────────────────────────────────────────────────
 
   return (
-    <div style={styles.app}>
-      {/* Header */}
+    <>
+      <style>{css}</style>
 
-      <div style={styles.header}>
-        <div style={styles.headerTop}>
+      <div className="layout">
+        {/* SIDEBAR */}
+
+        <aside className="sidebar">
           <div>
-            <div style={styles.smallText}>
-              Property Finance
+            <div className="brand">
+              GM
             </div>
 
-            <h1 style={styles.title}>
-              Balance Sheet
-            </h1>
+            <div className="brandText">
+              Green Meadows
+            </div>
+
+            <div className="menu">
+              <SidebarItem
+                icon={<LayoutDashboard size={18} />}
+                label="Dashboard"
+                active
+              />
+
+              <SidebarItem
+                icon={<Wallet size={18} />}
+                label="Transactions"
+              />
+
+              <SidebarItem
+                icon={<PieChart size={18} />}
+                label="Analytics"
+              />
+
+              <SidebarItem
+                icon={<Landmark size={18} />}
+                label="Finance"
+              />
+
+              <SidebarItem
+                icon={<Settings size={18} />}
+                label="Settings"
+              />
+            </div>
           </div>
-        </div>
 
-        {/* KPI */}
+          <div className="profile">
+            <div className="avatar">
+              GM
+            </div>
 
-        <div style={styles.kpiGrid}>
-          <KpiCard
-            title="Income"
-            value={`₹${fmt(totalIncome)}`}
-            color="#16a34a"
-          />
+            <div>
+              <div className="profileName">
+                Block A
+              </div>
 
-          <KpiCard
-            title="Expense"
-            value={`₹${fmt(totalExpense)}`}
-            color="#dc2626"
-          />
+              <div className="profileSub">
+                Finance Admin
+              </div>
+            </div>
+          </div>
+        </aside>
 
-          <KpiCard
-            title="Balance"
-            value={`₹${fmt(balance)}`}
-            color="#2563eb"
-          />
+        {/* MAIN */}
 
-          <KpiCard
-            title="Savings"
-            value={`${savingsRate}%`}
-            color="#7c3aed"
-          />
-        </div>
+        <main className="main">
+          {/* TOPBAR */}
 
-        {/* Tabs */}
+          <div className="topbar">
+            <div>
+              <div className="eyebrow">
+                FINANCE OVERVIEW
+              </div>
 
-        <div style={styles.tabs}>
-          {[
-            ['overview', 'Overview'],
-            ['income', 'Income'],
-            ['expense', 'Expense'],
-          ].map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              style={{
-                ...styles.tabBtn,
-                ...(tab === key
-                  ? styles.activeTab
-                  : {}),
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+              <div className="title">
+                Balance Sheet
+              </div>
+            </div>
 
-      {/* Body */}
+            <div className="topActions">
+              <button className="iconBtn">
+                <Bell size={18} />
+              </button>
 
-      <div style={styles.body}>
-        {/* Overview */}
+              <button className="addBtn">
+                <Plus size={18} />
+                Add Transaction
+              </button>
+            </div>
+          </div>
 
-        {tab === 'overview' && (
-          <>
-            <Card title="6 Month Trend">
-              <div style={{ height: 260 }}>
+          {/* KPI */}
+
+          <div className="kpiGrid">
+            <Kpi
+              icon={<TrendingUp size={18} />}
+              label="Income"
+              value={`₹${fmt(totalIncome)}`}
+              green
+            />
+
+            <Kpi
+              icon={<TrendingDown size={18} />}
+              label="Expense"
+              value={`₹${fmt(totalExpense)}`}
+              red
+            />
+
+            <Kpi
+              icon={<Wallet size={18} />}
+              label="Balance"
+              value={`₹${fmt(balance)}`}
+              blue
+            />
+
+            <Kpi
+              icon={<PieChart size={18} />}
+              label="Transactions"
+              value={transactions.length}
+              purple
+            />
+          </div>
+
+          {/* CHARTS */}
+
+          <div className="chartGrid">
+            <div className="card">
+              <div className="cardTitle">
+                Financial Trend
+              </div>
+
+              <div className="chartWrap">
                 <Line
                   data={lineData}
-                  options={chartOptions}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio:
+                      false,
+                  }}
                 />
               </div>
-            </Card>
+            </div>
 
-            <div style={styles.grid2}>
-              <Card title="Income vs Expense">
-                <div style={{ height: 240 }}>
-                  <Bar
-                    data={barData}
-                    options={chartOptions}
+            <div className="card">
+              <div className="cardTitle">
+                Expense Breakdown
+              </div>
+
+              <div className="chartWrap">
+                <Doughnut data={pieData} />
+              </div>
+            </div>
+          </div>
+
+          {/* TABLE */}
+
+          <div className="tableCard">
+            <div className="tableHeader">
+              <div>
+                <div className="tableTitle">
+                  Transactions
+                </div>
+
+                <div className="tableSub">
+                  Modern finance table view
+                </div>
+              </div>
+
+              <div className="filters">
+                <div className="search">
+                  <Search size={15} />
+
+                  <input
+                    placeholder="Search transactions..."
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(
+                        e.target.value
+                      )
+                    }
                   />
                 </div>
-              </Card>
 
-              <Card title="Expense Breakdown">
-                <div style={{ height: 240 }}>
-                  <Doughnut
-                    data={pieData}
-                    options={chartOptions}
-                  />
-                </div>
-              </Card>
-            </div>
-          </>
-        )}
-
-        {/* Income */}
-
-        {tab === 'income' && (
-          <Card title="Income Records">
-            <div style={styles.filters}>
-              <input
-                style={styles.input}
-                placeholder="Search..."
-                value={incSearch}
-                onChange={(e) =>
-                  setIncSearch(e.target.value)
-                }
-              />
-
-              <select
-                style={styles.select}
-                value={incMonth}
-                onChange={(e) =>
-                  setIncMonth(e.target.value)
-                }
-              >
-                <option value="">
-                  All Months
-                </option>
-
-                {MONTHS.map(([v, l]) => (
-                  <option key={v} value={v}>
-                    {l}
+                <select
+                  value={month}
+                  onChange={(e) =>
+                    setMonth(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="">
+                    All Months
                   </option>
-                ))}
-              </select>
+
+                  {MONTHS.map(([v, l]) => (
+                    <option
+                      key={v}
+                      value={v}
+                    >
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <Table
-              rows={filteredIncome}
-              type="income"
-            />
-          </Card>
-        )}
+            <div className="tableWrap">
+              <table className="modernTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Flat</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th align="right">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
 
-        {/* Expense */}
+                <tbody>
+                  {filtered.map((r) => (
+                    <tr key={r.id}>
+                      <td>
+                        <div className="date">
+                          {r.date}
+                        </div>
+                      </td>
 
-        {tab === 'expense' && (
-          <Card title="Expense Records">
-            <div style={styles.filters}>
-              <input
-                style={styles.input}
-                placeholder="Search..."
-                value={expSearch}
-                onChange={(e) =>
-                  setExpSearch(e.target.value)
-                }
-              />
+                      <td>
+                        <div className="titleCell">
+                          {r.title}
+                        </div>
+                      </td>
 
-              <select
-                style={styles.select}
-                value={expMonth}
-                onChange={(e) =>
-                  setExpMonth(e.target.value)
-                }
-              >
-                <option value="">
-                  All Months
-                </option>
+                      <td>
+                        <div className="flat">
+                          {r.flat_no ||
+                            "-"}
+                        </div>
+                      </td>
 
-                {MONTHS.map(([v, l]) => (
-                  <option key={v} value={v}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+                      <td>
+                        <span className="category">
+                          {r.category}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`status ${
+                            r.type
+                          }`}
+                        >
+                          {r.type}
+                        </span>
+                      </td>
+
+                      <td align="right">
+                        <span
+                          className={`amount ${
+                            r.type ===
+                            "income"
+                              ? "greenText"
+                              : "redText"
+                          }`}
+                        >
+                          ₹
+                          {fmt(r.amount)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            <Table
-              rows={filteredExpenses}
-              type="expense"
-            />
-          </Card>
-        )}
+          </div>
+        </main>
       </div>
-    </div>
-  )
+    </>
+  );
 }
 
-// ─────────────────────────────────────────────────────────────
-// Components
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// KPI
+// ─────────────────────────────────────────────
 
-function Card({ title, children }) {
+function Kpi({
+  icon,
+  label,
+  value,
+  green,
+  red,
+  blue,
+  purple,
+}) {
   return (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitle}>{title}</h3>
-      {children}
-    </div>
-  )
-}
+    <div className="kpi">
+      <div className="kpiTop">
+        <div>{label}</div>
 
-function KpiCard({ title, value, color }) {
-  return (
-    <div style={styles.kpiCard}>
-      <div style={styles.kpiTitle}>{title}</div>
+        <div
+          className={`kpiIcon ${
+            green
+              ? "green"
+              : red
+              ? "red"
+              : blue
+              ? "blue"
+              : "purple"
+          }`}
+        >
+          {icon}
+        </div>
+      </div>
 
-      <div
-        style={{
-          ...styles.kpiValue,
-          color,
-        }}
-      >
+      <div className="kpiValue">
         {value}
       </div>
     </div>
-  )
+  );
 }
 
-function Table({ rows, type }) {
+// ─────────────────────────────────────────────
+// SIDEBAR ITEM
+// ─────────────────────────────────────────────
+
+function SidebarItem({
+  icon,
+  label,
+  active,
+}) {
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Flat</th>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={5}
-                style={{ padding: 20 }}
-              >
-                No records found
-              </td>
-            </tr>
-          ) : (
-            rows.map((r) => (
-              <tr key={r.id}>
-                <td>{r.date}</td>
-
-                <td>{r.flat_no || '-'}</td>
-
-                <td>{r.title}</td>
-
-                <td>{r.category}</td>
-
-                <td
-                  style={{
-                    color:
-                      type === 'income'
-                        ? '#16a34a'
-                        : '#dc2626',
-
-                    fontWeight: 700,
-                  }}
-                >
-                  ₹{fmt(r.amount)}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+    <div
+      className={`sideItem ${
+        active ? "sideActive" : ""
+      }`}
+    >
+      {icon}
+      {label}
     </div>
-  )
+  );
 }
 
-// ─────────────────────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// CSS
+// ─────────────────────────────────────────────
 
-const styles = {
-  app: {
-    background: '#f1f5f9',
-    minHeight: '100vh',
-    fontFamily: 'Inter, sans-serif',
-  },
+const css = `
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-  header: {
-    background: '#0f172a',
-    padding: 20,
-    color: 'white',
-  },
-
-  headerTop: {
-    marginBottom: 20,
-  },
-
-  smallText: {
-    color: '#94a3b8',
-    fontSize: 12,
-  },
-
-  title: {
-    margin: 0,
-    fontSize: 32,
-    fontWeight: 800,
-  },
-
-  body: {
-    padding: 16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 16,
-  },
-
-  kpiGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 12,
-  },
-
-  kpiCard: {
-    background: 'white',
-    borderRadius: 16,
-    padding: 16,
-  },
-
-  kpiTitle: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 8,
-  },
-
-  kpiValue: {
-    fontSize: 24,
-    fontWeight: 800,
-  },
-
-  tabs: {
-    display: 'flex',
-    gap: 8,
-    marginTop: 20,
-  },
-
-  tabBtn: {
-    border: 'none',
-    padding: '10px 16px',
-    borderRadius: 10,
-    background: '#1e293b',
-    color: '#94a3b8',
-    cursor: 'pointer',
-    fontWeight: 600,
-  },
-
-  activeTab: {
-    background: 'white',
-    color: '#0f172a',
-  },
-
-  card: {
-    background: 'white',
-    borderRadius: 20,
-    padding: 20,
-  },
-
-  cardTitle: {
-    marginTop: 0,
-    marginBottom: 16,
-    fontSize: 18,
-  },
-
-  grid2: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 16,
-  },
-
-  filters: {
-    display: 'flex',
-    gap: 10,
-    marginBottom: 16,
-  },
-
-  input: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 10,
-    border: '1px solid #cbd5e1',
-  },
-
-  select: {
-    padding: 10,
-    borderRadius: 10,
-    border: '1px solid #cbd5e1',
-  },
-
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  },
-
-  center: {
-    minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: 'Inter, sans-serif',
-  },
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
+
+body{
+  font-family:'Inter',sans-serif;
+  background:#0F172A;
+  color:#E2E8F0;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+  background:#111827;
+  border-right:1px solid rgba(255,255,255,.06);
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.brand{
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#3B82F6,#8B5CF6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  font-size:18px;
+}
+
+.brandText{
+  margin-top:16px;
+  font-size:24px;
+  font-weight:800;
+}
+
+.menu{
+  margin-top:40px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.sideItem{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 18px;
+  border-radius:16px;
+  color:#94A3B8;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.sideItem:hover{
+  background:rgba(255,255,255,.05);
+}
+
+.sideActive{
+  background:linear-gradient(
+    135deg,
+    rgba(59,130,246,.2),
+    rgba(139,92,246,.2)
+  );
+  color:white;
+}
+
+.profile{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:rgba(255,255,255,.04);
+  padding:16px;
+  border-radius:20px;
+}
+
+.avatar{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:#3B82F6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+}
+
+.profileName{
+  font-weight:700;
+}
+
+.profileSub{
+  color:#94A3B8;
+  font-size:13px;
+  margin-top:2px;
+}
+
+/* MAIN */
+
+.main{
+  padding:32px;
+  overflow:auto;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.eyebrow{
+  color:#64748B;
+  font-size:12px;
+  letter-spacing:.08em;
+}
+
+.title{
+  font-size:42px;
+  font-weight:800;
+  margin-top:8px;
+}
+
+.topActions{
+  display:flex;
+  gap:14px;
+}
+
+.iconBtn{
+  width:50px;
+  height:50px;
+  border:none;
+  border-radius:18px;
+  background:#1E293B;
+  color:white;
+  cursor:pointer;
+}
+
+.addBtn{
+  height:50px;
+  padding:0 22px;
+  border:none;
+  border-radius:18px;
+  background:linear-gradient(
+    135deg,
+    #3B82F6,
+    #8B5CF6
+  );
+  color:white;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+}
+
+/* KPI */
+
+.kpiGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+  margin-top:28px;
+}
+
+.kpi{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
+  backdrop-filter:blur(16px);
+  border-radius:28px;
+  padding:24px;
+}
+
+.kpiTop{
+  display:flex;
+  justify-content:space-between;
+  color:#94A3B8;
+}
+
+.kpiValue{
+  margin-top:20px;
+  font-size:32px;
+  font-weight:800;
+}
+
+.kpiIcon{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.green{
+  background:rgba(34,197,94,.15);
+  color:#22C55E;
+}
+
+.red{
+  background:rgba(239,68,68,.15);
+  color:#EF4444;
+}
+
+.blue{
+  background:rgba(59,130,246,.15);
+  color:#3B82F6;
+}
+
+.purple{
+  background:rgba(139,92,246,.15);
+  color:#8B5CF6;
+}
+
+/* CARDS */
+
+.chartGrid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:24px;
+  margin-top:28px;
+}
+
+.card,
+.tableCard{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
+  backdrop-filter:blur(18px);
+  border-radius:30px;
+  padding:28px;
+}
+
+.cardTitle{
+  font-size:20px;
+  font-weight:700;
+}
+
+.chartWrap{
+  height:320px;
+  margin-top:24px;
+}
+
+/* TABLE */
+
+.tableCard{
+  margin-top:28px;
+}
+
+.tableHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+}
+
+.tableTitle{
+  font-size:24px;
+  font-weight:800;
+}
+
+.tableSub{
+  color:#94A3B8;
+  margin-top:6px;
+}
+
+.filters{
+  display:flex;
+  gap:14px;
+}
+
+.search{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,.06);
+  padding:14px 18px;
+  border-radius:18px;
+  width:280px;
+}
+
+.search input{
+  background:none;
+  border:none;
+  outline:none;
+  color:white;
+  width:100%;
+  font-family:inherit;
+}
+
+select{
+  background:#111827;
+  border:1px solid rgba(255,255,255,.06);
+  color:white;
+  border-radius:18px;
+  padding:0 18px;
+  outline:none;
+  font-family:inherit;
+}
+
+.tableWrap{
+  overflow:auto;
+}
+
+.modernTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 14px;
+}
+
+.modernTable thead th{
+  color:#64748B;
+  font-size:12px;
+  text-transform:uppercase;
+  padding:0 18px;
+  text-align:left;
+}
+
+.modernTable tbody tr{
+  background:rgba(255,255,255,.04);
+  transition:.2s;
+}
+
+.modernTable tbody tr:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,.07);
+}
+
+.modernTable td{
+  padding:22px 18px;
+}
+
+.modernTable tr td:first-child{
+  border-radius:20px 0 0 20px;
+}
+
+.modernTable tr td:last-child{
+  border-radius:0 20px 20px 0;
+}
+
+.date{
+  color:#CBD5E1;
+  font-weight:600;
+}
+
+.titleCell{
+  font-weight:700;
+}
+
+.flat{
+  color:#94A3B8;
+}
+
+.category{
+  background:rgba(59,130,246,.14);
+  color:#93C5FD;
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.status{
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  text-transform:capitalize;
+}
+
+.status.income{
+  background:rgba(34,197,94,.15);
+  color:#22C55E;
+}
+
+.status.expense{
+  background:rgba(239,68,68,.15);
+  color:#EF4444;
+}
+
+.amount{
+  font-weight:800;
+  font-size:15px;
+}
+
+.greenText{
+  color:#22C55E;
+}
+
+.redText{
+  color:#EF4444;
+}
+
+.loader{
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1200px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .sidebar{
+    display:none;
+  }
+
+  .kpiGrid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .chartGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:768px){
+
+  .main{
+    padding:20px;
+  }
+
+  .topbar{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:20px;
+  }
+
+  .kpiGrid{
+    grid-template-columns:1fr;
+  }
+
+  .tableHeader{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:20px;
+  }
+
+  .filters{
+    width:100%;
+    flex-direction:column;
+  }
+
+  .search{
+    width:100%;
+  }
+
+  .title{
+    font-size:32px;
+  }
+}
+`;
