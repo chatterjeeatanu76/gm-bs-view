@@ -163,7 +163,9 @@ export default function App() {
           expenses
             .filter((r) =>
               r.date?.includes(`-${m}-`)
-            )
+                  )
+
+
             .reduce(
               (a, b) =>
                 a + Number(b.amount || 0),
@@ -930,39 +932,46 @@ select{
 
 .date{
   color:#CBD5E1;
-  font-weight:600;
+  font-weight:400;
   font-size:12px;
+  white-space: nowrap;
 }
 
 .titleCell{
-  font-weight:700;
+  font-weight:400;
   font-size:12px;
+  white-space: nowrap;
 }
 
 .flat{
   color:#e8edc2;
   font-size:12px;
-  font-weight:700;
+  font-weight:400;
+  white-space: nowrap;
 }
 
 .category{  
+   background:rgba(59,130,246,.14);
   color:#93C5FD;
+  padding:8px 14px;
   border-radius:999px;
   font-size:12px;
-  font-weight:700;
+  font-weight:400;
+  white-space: nowrap;
 }
 
 .status{
   padding:8px 14px;
   border-radius:999px;
   font-size:12px;
-  font-weight:700;
+  font-weight:400;
   text-transform:capitalize;
 }
 
 .status.income{
   background:rgba(34,197,94,.15);
   color:#22C55E;
+  white-space: nowrap;
 }
 
 .status.expense{
@@ -972,7 +981,8 @@ select{
 
 .amount{
   font-weight:800;
-  font-size:15px;
+  font-size:14px;
+  white-space: nowrap;
 }
 
 .greenText{
