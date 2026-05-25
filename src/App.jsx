@@ -420,9 +420,21 @@ export default function App() {
                   {filtered.map((r) => (
                     <tr key={r.id}>
                       <td>
+{/*}
+
                         <div className="date">
                           {r.date}
                         </div>
+*/}
+                        <div className="date">
+                          {new Date(r.date)
+                            .toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                            })
+                            .replace(",", "")}
+                        </div>
+
                       </td>
 
                       <td>
