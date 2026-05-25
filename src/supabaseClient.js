@@ -1,13 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
-const SUPABASE_KEY  = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error(
-    '[balancesheet] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. ' +
-    'Add them to your .env file or Vercel environment variables.'
-  )
-}
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+export const supabase = createClient(
+  'https://soubaetsvxxuubnruuyd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdWJhZXRzdnh4dXVibnJ1dXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzQ1NzAsImV4cCI6MjA5NTAxMDU3MH0.oB4XXGrYzZPoyoT6ioxJh5KKz8ULnSyum2SvmpjzdJk'
+)
