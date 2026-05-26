@@ -6,12 +6,10 @@ import {
   Wallet,
   TrendingUp,
   TrendingDown,
-  Landmark,
-  PieChart,
   Settings,
   Search,
-  Bell,
-  Plus,
+  FileText,
+  Phone,
 } from "lucide-react";
 
 import {
@@ -64,9 +62,8 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState("");
 
-  // ─────────────────────────────────────────────
-  // FETCH
-  // ─────────────────────────────────────────────
+  const [activePage, setActivePage] =
+    useState("dashboard");
 
   useEffect(() => {
     const load = async () => {
@@ -83,10 +80,6 @@ export default function App() {
 
     load();
   }, []);
-
-  // ─────────────────────────────────────────────
-  // FILTER
-  // ─────────────────────────────────────────────
 
   const filtered = useMemo(() => {
     return transactions.filter((row) => {
@@ -122,10 +115,6 @@ export default function App() {
   );
 
   const balance = totalIncome - totalExpense;
-
-  // ─────────────────────────────────────────────
-  // CHARTS
-  // ─────────────────────────────────────────────
 
   const lineData = {
     labels: MONTHS.slice(-6).map(([, l]) =>
@@ -163,9 +152,7 @@ export default function App() {
           expenses
             .filter((r) =>
               r.date?.includes(`-${m}-`)
-                  )
-
-
+            )
             .reduce(
               (a, b) =>
                 a + Number(b.amount || 0),
@@ -240,29 +227,60 @@ export default function App() {
 
             <div className="menu">
               <SidebarItem
-                icon={<LayoutDashboard size={18} />}
+                icon={
+                  <LayoutDashboard size={18} />
+                }
                 label="Dashboard"
-                active
+                active={
+                  activePage === "dashboard"
+                }
+                onClick={() =>
+                  setActivePage("dashboard")
+                }
               />
 
               <SidebarItem
                 icon={<Wallet size={18} />}
-                label="Transactions"
+                label="Pay Now"
+                active={
+                  activePage === "paynow"
+                }
+                onClick={() =>
+                  setActivePage("paynow")
+                }
               />
 
               <SidebarItem
-                icon={<PieChart size={18} />}
-                label="Analytics"
+                icon={<FileText size={18} />}
+                label="Society Rules"
+                active={
+                  activePage === "rules"
+                }
+                onClick={() =>
+                  setActivePage("rules")
+                }
               />
 
               <SidebarItem
-                icon={<Landmark size={18} />}
-                label="Finance"
+                icon={<Phone size={18} />}
+                label="Contact"
+                active={
+                  activePage === "contact"
+                }
+                onClick={() =>
+                  setActivePage("contact")
+                }
               />
 
               <SidebarItem
                 icon={<Settings size={18} />}
                 label="Settings"
+                active={
+                  activePage === "settings"
+                }
+                onClick={() =>
+                  setActivePage("settings")
+                }
               />
             </div>
           </div>
@@ -287,248 +305,439 @@ export default function App() {
         {/* MAIN */}
 
         <main className="main">
-          {/* TOPBAR */}
+          {/* DASHBOARD */}
 
-          <div className="topbar">
-            <div>
-              <div className="eyebrow">
-                FINANCE OVERVIEW
-              </div>
+          {activePage === "dashboard" && (
+            <>
+              <div className="topbar">
+                <div>
+                  <div className="eyebrow">
+                    FINANCE OVERVIEW
+                  </div>
 
-              <div className="title">
-                Balance Sheet
-              </div>
-            </div>
-{/*}
-            <div className="topActions">
-              <button className="iconBtn">
-                <Bell size={18} />
-              </button>
-
-              <button className="addBtn">
-                <Plus size={18} />
-                Add Transaction
-              </button>
-            </div>
-*/}
-            
-          </div>
-
-
-
-          {/* KPI */}
-
-          <div className="kpiGrid">
-            <Kpi
-              icon={<TrendingUp size={18} />}
-              label="Income"
-              value={`₹${fmt(totalIncome)}`}
-              green
-            />
-
-            <Kpi
-              icon={<TrendingDown size={18} />}
-              label="Expense"
-              value={`₹${fmt(totalExpense)}`}
-              red
-            />
-
-            <Kpi
-              icon={<Wallet size={18} />}
-              label="Balance"
-              value={`₹${fmt(balance)}`}
-              blue
-            />
-  {/*}
-            <Kpi
-              icon={<PieChart size={18} />}
-              label="Transactions"
-              value={transactions.length}
-              purple
-            />
-*/}
-
-          </div>
-
-
-                    {/* TABLE */}
-
-          <div className="tableCard">
-            <div className="tableHeader">
-              <div>
-                <div className="tableTitle">
-                  Transactions
-                </div>
-
-                <div className="tableSub">
-                  Monthly overview of all transactions
+                  <div className="title">
+                    Balance Sheet
+                  </div>
                 </div>
               </div>
 
-              <div className="filters">
-                <div className="search">
-                  <Search size={15} />
+              {/* KPI */}
 
-                  <input
-                    placeholder="Search transactions..."
-                    value={search}
-                    onChange={(e) =>
-                      setSearch(
-                        e.target.value
-                      )
-                    }
-                  />
-                </div>
-
-                <select
-                  value={month}
-                  onChange={(e) =>
-                    setMonth(
-                      e.target.value
-                    )
+              <div className="kpiGrid">
+                <Kpi
+                  icon={
+                    <TrendingUp size={18} />
                   }
-                >
-                  <option value="">
-                    All Months
-                  </option>
+                  label="Income"
+                  value={`₹${fmt(totalIncome)}`}
+                  green
+                />
 
-                  {MONTHS.map(([v, l]) => (
-                    <option
-                      key={v}
-                      value={v}
-                    >
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                <Kpi
+                  icon={
+                    <TrendingDown size={18} />
+                  }
+                  label="Expense"
+                  value={`₹${fmt(totalExpense)}`}
+                  red
+                />
 
-            <div className="tableWrap">
-              <table className="modernTable">
-                <thead>
-                  <tr>
-                    <th>Date</th>                    
-                    <th>Flat</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th align="right">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filtered.map((r) => (
-                    <tr key={r.id}>
-                      <td>
-{/*}
-
-                        <div className="date">
-                          {r.date}
-                        </div>
-*/}
-                        <div className="date">
-                          {new Date(r.date)
-                            .toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                            })
-                            .replace(",", "")}
-                        </div>
-
-                      </td>
-{/*}
-                      <td>
-                        <div className="titleCell">
-                          {r.title}
-                        </div>
-                      </td>
-*/}
-                      <td>
-                        <div className="flat">
-                          {r.flat_no ||
-                            "-"}
-                        </div>
-                      </td>
-
-                      <td>
-                        <span className="category">
-                          {r.category}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span
-                          className={`status ${
-                            r.type
-                          }`}
-                        >
-                          {r.type}
-                        </span>
-                      </td>
-
-                      <td align="right">
-                        <span
-                          className={`amount ${
-                            r.type ===
-                            "income"
-                              ? "greenText"
-                              : "redText"
-                          }`}
-                        >
-                          ₹
-                          {fmt(r.amount)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* CHARTS */}
-
-          <div className="chartGrid">
-            <div className="card">
-              <div className="cardTitle">
-                Financial Trend
-              </div>
-
-              <div className="chartWrap">
-                <Line
-                  data={lineData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio:
-                      false,
-                  }}
+                <Kpi
+                  icon={<Wallet size={18} />}
+                  label="Balance"
+                  value={`₹${fmt(balance)}`}
+                  blue
                 />
               </div>
-            </div>
 
-            <div className="card">
-              <div className="cardTitle">
-                Expense Breakdown
+              {/* TABLE */}
+
+              <div className="tableCard">
+                <div className="tableHeader">
+                  <div>
+                    <div className="tableTitle">
+                      Transactions
+                    </div>
+
+                    <div className="tableSub">
+                      Monthly overview of all
+                      transactions
+                    </div>
+                  </div>
+
+                  <div className="filters">
+                    <div className="search">
+                      <Search size={15} />
+
+                      <input
+                        placeholder="Search transactions..."
+                        value={search}
+                        onChange={(e) =>
+                          setSearch(
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                    <select
+                      value={month}
+                      onChange={(e) =>
+                        setMonth(
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="">
+                        All Months
+                      </option>
+
+                      {MONTHS.map(([v, l]) => (
+                        <option
+                          key={v}
+                          value={v}
+                        >
+                          {l}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="tableWrap">
+                  <table className="modernTable">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Flat</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th align="right">
+                          Amount
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {filtered.map((r) => (
+                        <tr key={r.id}>
+                          <td>
+                            <div className="date">
+                              {new Date(
+                                r.date
+                              )
+                                .toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    day: "2-digit",
+                                    month:
+                                      "short",
+                                  }
+                                )
+                                .replace(
+                                  ",",
+                                  ""
+                                )}
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="flat">
+                              {r.flat_no || "-"}
+                            </div>
+                          </td>
+
+                          <td>
+                            <span className="category">
+                              {r.category}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span
+                              className={`status ${r.type}`}
+                            >
+                              {r.type}
+                            </span>
+                          </td>
+
+                          <td align="right">
+                            <span
+                              className={`amount ${
+                                r.type ===
+                                "income"
+                                  ? "greenText"
+                                  : "redText"
+                              }`}
+                            >
+                              ₹
+                              {fmt(
+                                r.amount
+                              )}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              <div className="chartWrap">
-                <Doughnut data={pieData} />
+              {/* CHARTS */}
+
+              <div className="chartGrid">
+                <div className="card">
+                  <div className="cardTitle">
+                    Financial Trend
+                  </div>
+
+                  <div className="chartWrap">
+                    <Line
+                      data={lineData}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio:
+                          false,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="card">
+                  <div className="cardTitle">
+                    Expense Breakdown
+                  </div>
+
+                  <div className="chartWrap">
+                    <Doughnut
+                      data={pieData}
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* PAY NOW PAGE */}
+
+          {activePage === "paynow" && (
+            <div className="payNowPage">
+              <div className="pageHeading">
+                <h1>Pay Maintenance</h1>
+
+                <p>
+                  Securely pay your
+                  monthly society
+                  maintenance using QR
+                  payment or direct bank
+                  transfer.
+                </p>
+              </div>
+
+              <div className="payGrid">
+                {/* QR CARD */}
+
+                <div className="payCard">
+                  <div className="payCardTitle">
+                    Scan & Pay
+                  </div>
+
+                  <div className="qrWrapper">
+                    <img
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=GreenMeadowsMaintenance"
+                      alt="QR Code"
+                    />
+                  </div>
+
+                  <div className="paySub">
+                    UPI ID:
+                    greenmeadows@upi
+                  </div>
+                </div>
+
+                {/* BANK DETAILS */}
+
+                <div className="payCard">
+                  <div className="payCardTitle">
+                    Bank Details
+                  </div>
+
+                  <div className="bankList">
+                    <div className="bankRow">
+                      <span>
+                        Account Name
+                      </span>
+
+                      <strong>
+                        Green Meadows
+                        Society
+                      </strong>
+                    </div>
+
+                    <div className="bankRow">
+                      <span>Bank Name</span>
+
+                      <strong>
+                        HDFC Bank
+                      </strong>
+                    </div>
+
+                    <div className="bankRow">
+                      <span>
+                        Account Number
+                      </span>
+
+                      <strong>
+                        50100234567891
+                      </strong>
+                    </div>
+
+                    <div className="bankRow">
+                      <span>
+                        IFSC Code
+                      </span>
+
+                      <strong>
+                        HDFC0001234
+                      </strong>
+                    </div>
+
+                    <div className="bankRow">
+                      <span>Branch</span>
+
+                      <strong>
+                        Madhapur Branch
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* NOTICE */}
+
+              <div className="noticeCard">
+                ⚠ Kindly ensure that
+                the monthly maintenance
+                payment is completed
+                before the 10th of
+                every month to avoid
+                late charges and
+                service interruptions.
               </div>
             </div>
-          </div>
+          )}
 
+          {/* RULES PAGE */}
 
+          {activePage === "rules" && (
+            <div className="pageCard">
+              <h1>Society Rules</h1>
+
+              <p className="rulesText">
+                Please follow the
+                society guidelines to
+                maintain a safe,
+                peaceful and clean
+                environment for all
+                residents.
+              </p>
+
+              <ul className="rulesList">
+                <li>
+                  Maintenance payment
+                  before 10th of every
+                  month.
+                </li>
+
+                <li>
+                  No loud noise after
+                  10 PM.
+                </li>
+
+                <li>
+                  Keep common areas
+                  clean.
+                </li>
+
+                <li>
+                  Visitor parking only
+                  in designated areas.
+                </li>
+
+                <li>
+                  Pets should be
+                  supervised in common
+                  spaces.
+                </li>
+              </ul>
+
+              <div className="pdfCard">
+                <div>
+                  <div className="pdfTitle">
+                    Society Rule Book
+                  </div>
+
+                  <div className="pdfSub">
+                    Download or view the
+                    official society
+                    handbook.
+                  </div>
+                </div>
+
+                <a
+                  href="/society-rules.pdf"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pdfBtn"
+                >
+                  View PDF
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* CONTACT */}
+
+          {activePage === "contact" && (
+            <div className="pageCard">
+              <h1>Contact</h1>
+
+              <div className="contactBox">
+                <p>
+                  📞 Maintenance Office:
+                  +91 9876543210
+                </p>
+
+                <p>
+                  📧
+                  support@greenmeadows.com
+                </p>
+
+                <p>
+                  🕒 Office Hours: 9 AM
+                  - 6 PM
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* SETTINGS */}
+
+          {activePage === "settings" && (
+            <div className="pageCard">
+              <h1>Settings</h1>
+
+              <p>
+                Settings page content
+                goes here.
+              </p>
+            </div>
+          )}
         </main>
       </div>
     </>
   );
 }
-
-// ─────────────────────────────────────────────
-// KPI
-// ─────────────────────────────────────────────
 
 function Kpi({
   icon,
@@ -537,7 +746,6 @@ function Kpi({
   green,
   red,
   blue,
-  purple,
 }) {
   return (
     <div className="kpi">
@@ -550,9 +758,7 @@ function Kpi({
               ? "green"
               : red
               ? "red"
-              : blue
-              ? "blue"
-              : "purple"
+              : "blue"
           }`}
         >
           {icon}
@@ -566,17 +772,15 @@ function Kpi({
   );
 }
 
-// ─────────────────────────────────────────────
-// SIDEBAR ITEM
-// ─────────────────────────────────────────────
-
 function SidebarItem({
   icon,
   label,
   active,
+  onClick,
 }) {
   return (
     <div
+      onClick={onClick}
       className={`sideItem ${
         active ? "sideActive" : ""
       }`}
@@ -587,34 +791,7 @@ function SidebarItem({
   );
 }
 
-// ─────────────────────────────────────────────
-// CSS
-// ─────────────────────────────────────────────
-
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
-
-
-
-.wix-madefor-text-<uniquifier> {
-  font-family: "Wix Madefor Text", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
-
-
-.quicksand-<uniquifier> {
-  font-family: "Quicksand", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
-
 *{
   margin:0;
   padding:0;
@@ -622,7 +799,7 @@ const css = `
 }
 
 body{
-  font-family: "Quicksand", sans-serif;
+  font-family:Inter,sans-serif;
   background:#0F172A;
   color:#E2E8F0;
 }
@@ -632,8 +809,6 @@ body{
   grid-template-columns:280px 1fr;
   min-height:100vh;
 }
-
-/* SIDEBAR */
 
 .sidebar{
   background:#111827;
@@ -653,7 +828,6 @@ body{
   align-items:center;
   justify-content:center;
   font-weight:800;
-  font-size:18px;
 }
 
 .brandText{
@@ -713,33 +887,18 @@ body{
   font-weight:700;
 }
 
-.profileName{
-  font-weight:700;
-}
-
-.profileSub{
-  color:#94A3B8;
-  font-size:13px;
-  margin-top:2px;
-}
-
-/* MAIN */
-
 .main{
   padding:32px;
   overflow:auto;
 }
 
 .topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  margin-bottom:28px;
 }
 
 .eyebrow{
   color:#64748B;
   font-size:12px;
-  letter-spacing:.08em;
 }
 
 .title{
@@ -748,52 +907,18 @@ body{
   margin-top:8px;
 }
 
-.topActions{
-  display:flex;
-  gap:14px;
-}
-
-.iconBtn{
-  width:50px;
-  height:50px;
-  border:none;
-  border-radius:18px;
-  background:#1E293B;
-  color:white;
-  cursor:pointer;
-}
-
-.addBtn{
-  height:50px;
-  padding:0 22px;
-  border:none;
-  border-radius:18px;
-  background:linear-gradient(
-    135deg,
-    #3B82F6,
-    #8B5CF6
-  );
-  color:white;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  cursor:pointer;
-}
-
-/* KPI */
-
 .kpiGrid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
-  margin-top:28px;
 }
 
-.kpi{
+.kpi,
+.card,
+.tableCard,
+.pageCard{
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.06);
-  backdrop-filter:blur(16px);
   border-radius:28px;
   padding:24px;
 }
@@ -801,10 +926,10 @@ body{
 .kpiTop{
   display:flex;
   justify-content:space-between;
-  color:#94A3B8;
 }
 
-.kpiValue{  
+.kpiValue{
+  margin-top:16px;
   font-size:32px;
   font-weight:800;
 }
@@ -832,41 +957,6 @@ body{
   background:rgba(59,130,246,.15);
   color:#3B82F6;
 }
-
-.purple{
-  background:rgba(139,92,246,.15);
-  color:#8B5CF6;
-}
-
-/* CARDS */
-
-.chartGrid{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:24px;
-  margin-top:28px;
-}
-
-.card,
-.tableCard{
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.06);
-  backdrop-filter:blur(18px);
-  border-radius:30px;
-  padding:28px;
-}
-
-.cardTitle{
-  font-size:20px;
-  font-weight:700;
-}
-
-.chartWrap{
-  height:320px;
-  margin-top:24px;
-}
-
-/* TABLE */
 
 .tableCard{
   margin-top:28px;
@@ -899,10 +989,8 @@ body{
   align-items:center;
   gap:10px;
   background:#111827;
-  border:1px solid rgba(255,255,255,.06);
   padding:14px 18px;
   border-radius:18px;
-  width:280px;
 }
 
 .search input{
@@ -910,18 +998,14 @@ body{
   border:none;
   outline:none;
   color:white;
-  width:100%;
-  font-family:inherit;
 }
 
 select{
   background:#111827;
-  border:1px solid rgba(255,255,255,.06);
+  border:none;
   color:white;
   border-radius:18px;
-  padding:18px;
-  outline:none;
-  font-family:inherit;
+  padding:14px;
 }
 
 .tableWrap{
@@ -934,75 +1018,43 @@ select{
   border-spacing:0 8px;
 }
 
-.modernTable thead th{
-  color:#64748B;
-  font-size:12px;
-  text-transform:uppercase;
-  padding:0 18px;
-  text-align:left;
-}
-
 .modernTable tbody tr{
   background:rgba(255,255,255,.04);
-  transition:.2s;
 }
 
-.modernTable tbody tr:hover{
-  transform:translateY(-2px);
-  background:rgba(255,255,255,.07);
+.modernTable td,
+.modernTable th{
+  padding:18px;
 }
 
-.modernTable td{
-  padding:22px 18px;
+.chartGrid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:24px;
+  margin-top:28px;
 }
 
-.modernTable tr td:first-child{
-  border-radius:20px 0 0 20px;
+.chartWrap{
+  height:320px;
+  margin-top:20px;
 }
 
-.modernTable tr td:last-child{
-  border-radius:0 20px 20px 0;
-}
-
-.date{
-  color:#CBD5E1;
-  font-weight:400;
+.date,
+.flat,
+.category{
   font-size:14px;
-  white-space: nowrap;
-}
-
-.titleCell{
-  font-weight:400;
-  font-size:14px;
-  white-space: nowrap;
-}
-
-.flat{
-  color:#CBD5E1;
-  font-size:14px;
-  font-weight:400;
-  white-space: nowrap;
-}
-
-.category{  
-  color:#CBD5E1;
-  font-size:14px;
-  font-weight:400;
-  white-space: nowrap;
 }
 
 .status{
   padding:8px 14px;
   border-radius:999px;
   font-size:14px;
-  font-weight:400;
   text-transform:capitalize;
 }
 
 .status.income{
   background:rgba(34,197,94,.15);
   color:#22C55E;
-  white-space: nowrap;
 }
 
 .status.expense{
@@ -1011,9 +1063,7 @@ select{
 }
 
 .amount{
-  font-weight:800;
-  font-size:14px;
-  white-space: nowrap;
+  font-weight:700;
 }
 
 .greenText{
@@ -1029,10 +1079,148 @@ select{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:20px;
 }
 
-/* RESPONSIVE */
+/* PAY NOW PAGE */
+
+.payNowPage{
+  margin-top:20px;
+}
+
+.pageHeading h1{
+  font-size:40px;
+  font-weight:800;
+}
+
+.pageHeading p{
+  color:#94A3B8;
+  margin-top:10px;
+  line-height:1.7;
+}
+
+.payGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  margin-top:28px;
+}
+
+.payCard{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:30px;
+  padding:30px;
+}
+
+.payCardTitle{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:24px;
+}
+
+.qrWrapper{
+  background:white;
+  border-radius:24px;
+  padding:20px;
+  display:flex;
+  justify-content:center;
+}
+
+.qrWrapper img{
+  width:220px;
+  height:220px;
+}
+
+.paySub{
+  margin-top:20px;
+  text-align:center;
+  color:#CBD5E1;
+}
+
+.bankList{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.bankRow{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  padding-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.bankRow span{
+  color:#94A3B8;
+}
+
+.noticeCard{
+  margin-top:28px;
+  background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.25);
+  color:#FCD34D;
+  padding:22px 24px;
+  border-radius:22px;
+  line-height:1.8;
+}
+
+/* RULES */
+
+.rulesText{
+  margin-top:14px;
+  color:#94A3B8;
+  line-height:1.8;
+}
+
+.rulesList{
+  margin-top:20px;
+  padding-left:20px;
+  line-height:2;
+}
+
+.pdfCard{
+  margin-top:32px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:24px;
+  padding:24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+}
+
+.pdfTitle{
+  font-size:18px;
+  font-weight:700;
+}
+
+.pdfSub{
+  color:#94A3B8;
+  margin-top:6px;
+}
+
+.pdfBtn{
+  background:linear-gradient(
+    135deg,
+    #3B82F6,
+    #8B5CF6
+  );
+
+  color:white;
+  text-decoration:none;
+  padding:14px 22px;
+  border-radius:16px;
+  font-weight:700;
+}
+
+.contactBox{
+  margin-top:20px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
 
 @media(max-width:1200px){
 
@@ -1044,11 +1232,11 @@ select{
     display:none;
   }
 
-  .kpiGrid{
-    grid-template-columns:1fr 1fr;
+  .chartGrid{
+    grid-template-columns:1fr;
   }
 
-  .chartGrid{
+  .kpiGrid{
     grid-template-columns:1fr;
   }
 }
@@ -1059,32 +1247,20 @@ select{
     padding:20px;
   }
 
-  .topbar{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:20px;
-  }
-
-  .kpiGrid{
+  .payGrid{
     grid-template-columns:1fr;
   }
 
-  .tableHeader{
+  .pdfCard{
     flex-direction:column;
     align-items:flex-start;
-    gap:20px;
-  }
-
-  .filters{
-    width:100%;
-    flex-direction:column;
-  }
-
-  .search{
-    width:100%;
   }
 
   .title{
+    font-size:32px;
+  }
+
+  .pageHeading h1{
     font-size:32px;
   }
 }
