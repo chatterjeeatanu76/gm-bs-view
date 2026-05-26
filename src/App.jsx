@@ -1472,7 +1472,585 @@ select{
     gap:6px;
     color:#94A3B8;
     font-size:11px;
-    cursor:pointer;
+    cursor:pointer;import { useEffect, useMemo, useState } from "react";
+import { supabase } from "./supabaseClient";
+
+import {
+  LayoutDashboard,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Settings,
+  Search,
+  FileText,
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
+
+import { Line, Doughnut } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const MONTHS = [
+  ["01", "January"],
+  ["02", "February"],
+  ["03", "March"],
+  ["04", "April"],
+  ["05", "May"],
+  ["06", "June"],
+  ["07", "July"],
+  ["08", "August"],
+  ["09", "September"],
+  ["10", "October"],
+  ["11", "November"],
+  ["12", "December"],
+];
+
+const fmt = (n) =>
+  new Intl.NumberFormat("en-IN").format(
+    Number(n || 0)
+  );
+
+export default function App() {
+  const [transactions, setTransactions] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [search, setSearch] =
+    useState("");
+
+  const [month, setMonth] =
+    useState("");
+
+  const [activePage, setActivePage] =
+    useState("dashboard");
+
+  const [currentPage, setCurrentPage] =
+    useState(1);
+
+  const rowsPerPage = 8;
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("transactions")
+        .select("*")
+        .order("date", {
+          ascending: false,
+        });
+
+      setTransactions(data || []);
+      setLoading(false);
+    };
+
+    load();
+  }, []);
+
+  const filtered = useMemo(() => {
+    return transactions.filter((row) => {
+      const text = Object.values(row)
+        .join(" ")
+        .toLowerCase();
+
+      return (
+        (!search ||
+          text.includes(
+            search.toLowerCase()
+          )) &&
+        (!month ||
+          row.date?.includes(
+            `-${month}-`
+          ))
+      );
+    });
+  }, [transactions, search, month]);
+
+  const totalPages = Math.ceil(
+    filtered.length / rowsPerPage
+  );
+
+  const paginatedTransactions =
+    filtered.slice(
+      (currentPage - 1) * rowsPerPage,
+      currentPage * rowsPerPage
+    );
+
+  const income = transactions.filter(
+    (x) => x.type === "income"
+  );
+
+  const expenses = transactions.filter(
+    (x) => x.type === "expense"
+  );
+
+  const totalIncome = income.reduce(
+    (a, b) =>
+      a + Number(b.amount || 0),
+    0
+  );
+
+  const totalExpense = expenses.reduce(
+    (a, b) =>
+      a + Number(b.amount || 0),
+    0
+  );
+
+  const balance =
+    totalIncome - totalExpense;
+
+  const lineData = {
+    labels: MONTHS.slice(-6).map(
+      ([, l]) => l.slice(0, 3)
+    ),
+
+    datasets: [
+      {
+        label: "Income",
+
+        data: MONTHS.slice(-6).map(
+          ([m]) =>
+            income
+              .filter((r) =>
+                r.date?.includes(
+                  `-${m}-`
+                )
+              )
+              .reduce(
+                (a, b) =>
+                  a +
+                  Number(
+                    b.amount || 0
+                  ),
+                0
+              )
+        ),
+
+        borderColor: "#22c55e",
+        backgroundColor:
+          "rgba(34,197,94,.08)",
+
+        fill: true,
+        tension: 0.4,
+      },
+
+      {
+        label: "Expense",
+
+        data: MONTHS.slice(-6).map(
+          ([m]) =>
+            expenses
+              .filter((r) =>
+                r.date?.includes(
+                  `-${m}-`
+                )
+              )
+              .reduce(
+                (a, b) =>
+                  a +
+                  Number(
+                    b.amount || 0
+                  ),
+                0
+              )
+        ),
+
+        borderColor: "#ef4444",
+        backgroundColor:
+          "rgba(239,68,68,.08)",
+
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const expenseMap = expenses.reduce(
+    (acc, item) => {
+      acc[item.category] =
+        (acc[item.category] || 0) +
+        Number(item.amount);
+
+      return acc;
+    },
+    {}
+  );
+
+  const pieData = {
+    labels: Object.keys(expenseMap),
+
+    datasets: [
+      {
+        data: Object.values(
+          expenseMap
+        ),
+
+        backgroundColor: [
+          "#3B82F6",
+          "#8B5CF6",
+          "#22C55E",
+          "#F97316",
+          "#EF4444",
+          "#14B8A6",
+        ],
+      },
+    ],
+  };
+
+  if (loading) {
+    return (
+      <div className="loader">
+        Loading dashboard...
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <style>{css}</style>
+
+      <div className="layout">
+        <aside className="sidebar">
+          <div>
+            <div className="brand">
+              GM
+            </div>
+
+            <div className="brandText">
+              Green Meadows
+            </div>
+
+            <div className="menu">
+              <SidebarItem
+                icon={
+                  <LayoutDashboard
+                    size={18}
+                  />
+                }
+                label="Dashboard"
+                active={
+                  activePage ===
+                  "dashboard"
+                }
+                onClick={() =>
+                  setActivePage(
+                    "dashboard"
+                  )
+                }
+              />
+
+              <SidebarItem
+                icon={
+                  <Wallet size={18} />
+                }
+                label="Pay Now"
+                active={
+                  activePage ===
+                  "paynow"
+                }
+                onClick={() =>
+                  setActivePage(
+                    "paynow"
+                  )
+                }
+              />
+
+              <SidebarItem
+                icon={
+                  <Wallet size={18} />
+                }
+                label="Payment History"
+                active={
+                  activePage ===
+                  "history"
+                }
+                onClick={() =>
+                  setActivePage(
+                    "history"
+                  )
+                }
+              />
+
+              <SidebarItem
+                icon={
+                  <FileText
+                    size={18}
+                  />
+                }
+                label="Society Rules"
+                active={
+                  activePage ===
+                  "rules"
+                }
+                onClick={() =>
+                  setActivePage(
+                    "rules"
+                  )
+                }
+              />
+
+              <SidebarItem
+                icon={
+                  <Phone size={18} />
+                }
+                label="Contact"
+                active={
+                  activePage ===
+                  "contact"
+                }
+                onClick={() =>
+                  setActivePage(
+                    "contact"
+                  )
+                }
+              />
+
+              <SidebarItem
+                icon={
+                  <Settings
+                    size={18}
+                  />
+                }
+                label="Settings"
+                active={
+                  activePage ===
+                  "settings"
+                }
+                onClick={() =>
+                  setActivePage(
+                    "settings"
+                  )
+                }
+              />
+            </div>
+          </div>
+        </aside>
+
+        <main className="main">
+          {activePage ===
+            "dashboard" && (
+            <>
+              {/* YOUR EXISTING DASHBOARD CODE */}
+            </>
+          )}
+
+          {/* PAYMENT HISTORY */}
+
+          {activePage ===
+            "history" && (
+            <div className="pageCard">
+              <div className="pageHeading">
+                <h1>
+                  Payment History
+                </h1>
+
+                <p>
+                  View all
+                  completed
+                  maintenance
+                  payment
+                  records and
+                  monthly
+                  transactions.
+                </p>
+              </div>
+
+              <div className="historyTableWrap">
+                <table className="historyTable">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Flat</th>
+                      <th>
+                        Category
+                      </th>
+                      <th>Status</th>
+                      <th align="right">
+                        Amount
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {income.length >
+                    0 ? (
+                      income.map(
+                        (
+                          item
+                        ) => (
+                          <tr
+                            key={
+                              item.id
+                            }
+                          >
+                            <td>
+                              <div className="date">
+                                {new Date(
+                                  item.date
+                                )
+                                  .toLocaleDateString(
+                                    "en-GB",
+                                    {
+                                      day: "2-digit",
+                                      month:
+                                        "short",
+                                      year:
+                                        "numeric",
+                                    }
+                                  )
+                                  .replace(
+                                    ",",
+                                    ""
+                                  )}
+                              </div>
+                            </td>
+
+                            <td>
+                              <div className="flat">
+                                {item.flat_no ||
+                                  "-"}
+                              </div>
+                            </td>
+
+                            <td>
+                              <span className="category">
+                                {
+                                  item.category
+                                }
+                              </span>
+                            </td>
+
+                            <td>
+                              <span className="status income">
+                                Paid
+                              </span>
+                            </td>
+
+                            <td align="right">
+                              <span className="amount greenText">
+                                ₹
+                                {fmt(
+                                  item.amount
+                                )}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      )
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          align="center"
+                          style={{
+                            padding:
+                              "40px",
+                          }}
+                        >
+                          No payment
+                          history
+                          available.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </>
+  );
+}
+
+function SidebarItem({
+  icon,
+  label,
+  active,
+  onClick,
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`sideItem ${
+        active
+          ? "sideActive"
+          : ""
+      }`}
+    >
+      {icon}
+      {label}
+    </div>
+  );
+}
+
+const css = `
+.historyTableWrap{
+  margin-top:28px;
+  overflow:auto;
+}
+
+.historyTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+  min-width:700px;
+}
+
+.historyTable thead th{
+  color:#64748B;
+  font-size:12px;
+  text-transform:uppercase;
+  padding:0 18px;
+  text-align:left;
+}
+
+.historyTable tbody tr{
+  background:rgba(255,255,255,.04);
+  transition:.2s;
+}
+
+.historyTable tbody tr:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,.07);
+}
+
+.historyTable td{
+  padding:22px 18px;
+}
+
+.historyTable tr td:first-child{
+  border-radius:20px 0 0 20px;
+}
+
+.historyTable tr td:last-child{
+  border-radius:0 20px 20px 0;
+}
+`;
   }
 
   .mobileActive{
