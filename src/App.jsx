@@ -62,6 +62,7 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState("");
   const [activePage, setActivePage] = useState("dashboard");
+  const [historySearch, setHistorySearch] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -391,10 +392,20 @@ export default function App() {
           {activePage === "history" && (
             <div className="pageCard">
               <div className="historyTop">
-                <h1>Payment History</h1>
-                <p className="historySub">
-                  Complete maintenance payment records of all residents.
-                </p>
+                <div>
+                  <h1>Payment History</h1>
+                  <p className="historySub">
+                    Complete maintenance payment records of all residents.
+                  </p>
+                </div>
+                <div className="search" style={{ marginTop: "16px" }}>
+                  <Search size={15} />
+                  <input
+                    placeholder="Search by flat, category, date..."
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="tableWrap">
@@ -410,7 +421,12 @@ export default function App() {
                   </thead>
                   <tbody>
                     {transactions
-                      .filter((item) => item.type === "income")
+                      .filter((item) => {
+                        if (item.type !== "income") return false;
+                        if (!historySearch) return true;
+                        const text = Object.values(item).join(" ").toLowerCase();
+                        return text.includes(historySearch.toLowerCase());
+                      })
                       .map((item) => (
                         <tr key={item.id}>
                           <td>
@@ -975,6 +991,17 @@ select{
 /* PAYMENT HISTORY */
 .historyTop{
   margin-bottom:24px;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+
+.historyHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:16px;
 }
 
 .historyTop h1{
