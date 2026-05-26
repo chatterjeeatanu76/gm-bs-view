@@ -10,8 +10,6 @@ import {
   Search,
   FileText,
   Phone,
-  Bell,
-  History,
 } from "lucide-react";
 
 import {
@@ -55,9 +53,7 @@ const MONTHS = [
 ];
 
 const fmt = (n) =>
-  new Intl.NumberFormat("en-IN").format(
-    Number(n || 0)
-  );
+  new Intl.NumberFormat("en-IN").format(Number(n || 0));
 
 export default function App() {
   const [transactions, setTransactions] =
@@ -132,22 +128,6 @@ export default function App() {
 
   const balance =
     totalIncome - totalExpense;
-
-  const currentDate = new Date();
-
-  const currentMonth = String(
-    currentDate.getMonth() + 1
-  ).padStart(2, "0");
-
-  const hasPaidThisMonth = income.some(
-    (t) =>
-      t.date?.includes(
-        `-${currentMonth}-`
-      )
-  );
-
-  const isAfter10th =
-    currentDate.getDate() > 10;
 
   const lineData = {
     labels: MONTHS.slice(-6).map(
@@ -260,6 +240,8 @@ export default function App() {
       <style>{css}</style>
 
       <div className="layout">
+        {/* SIDEBAR */}
+
         <aside className="sidebar">
           <div>
             <div className="brand">
@@ -301,24 +283,6 @@ export default function App() {
                 onClick={() =>
                   setActivePage(
                     "paynow"
-                  )
-                }
-              />
-
-              <SidebarItem
-                icon={
-                  <History
-                    size={18}
-                  />
-                }
-                label="Payment History"
-                active={
-                  activePage ===
-                  "history"
-                }
-                onClick={() =>
-                  setActivePage(
-                    "history"
                   )
                 }
               />
@@ -376,9 +340,29 @@ export default function App() {
               />
             </div>
           </div>
+
+          <div className="profile">
+            <div className="avatar">
+              GM
+            </div>
+
+            <div>
+              <div className="profileName">
+                Block A
+              </div>
+
+              <div className="profileSub">
+                Finance Admin
+              </div>
+            </div>
+          </div>
         </aside>
 
+        {/* MAIN */}
+
         <main className="main">
+          {/* DASHBOARD */}
+
           {activePage ===
             "dashboard" && (
             <>
@@ -394,55 +378,7 @@ export default function App() {
                 </div>
               </div>
 
-              {!hasPaidThisMonth && (
-                <div className="reminderCard">
-                  <div className="reminderLeft">
-                    <Bell size={22} />
-
-                    <div>
-                      <div className="reminderTitle">
-                        Maintenance
-                        Payment
-                        Pending
-                      </div>
-
-                      <div className="reminderSub">
-                        Kindly
-                        complete your
-                        monthly
-                        maintenance
-                        payment before
-                        the 10th.
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    className="reminderBtn"
-                    onClick={() =>
-                      setActivePage(
-                        "paynow"
-                      )
-                    }
-                  >
-                    Pay Now
-                  </button>
-                </div>
-              )}
-
-              {isAfter10th &&
-                !hasPaidThisMonth && (
-                  <div className="lateWarning">
-                    ⚠ Your
-                    maintenance
-                    payment is
-                    overdue.
-                    Please pay
-                    immediately to
-                    avoid penalty
-                    charges.
-                  </div>
-                )}
+              {/* KPI */}
 
               <div className="kpiGrid">
                 <Kpi
@@ -485,6 +421,8 @@ export default function App() {
                 />
               </div>
 
+              {/* TABLE */}
+
               <div className="tableCard">
                 <div className="tableHeader">
                   <div>
@@ -493,9 +431,8 @@ export default function App() {
                     </div>
 
                     <div className="tableSub">
-                      Monthly
-                      overview of
-                      all
+                      Monthly overview
+                      of all
                       transactions
                     </div>
                   </div>
@@ -576,33 +513,38 @@ export default function App() {
                             }
                           >
                             <td>
-                              {new Date(
-                                r.date
-                              )
-                                .toLocaleDateString(
-                                  "en-GB",
-                                  {
-                                    day: "2-digit",
-                                    month:
-                                      "short",
-                                  }
+                              <div className="date">
+                                {new Date(
+                                  r.date
                                 )
-                                .replace(
-                                  ",",
-                                  ""
-                                )}
+                                  .toLocaleDateString(
+                                    "en-GB",
+                                    {
+                                      day: "2-digit",
+                                      month:
+                                        "short",
+                                    }
+                                  )
+                                  .replace(
+                                    ",",
+                                    ""
+                                  )}
+                              </div>
                             </td>
 
                             <td>
-                              {
-                                r.flat_no
-                              }
+                              <div className="flat">
+                                {r.flat_no ||
+                                  "-"}
+                              </div>
                             </td>
 
                             <td>
-                              {
-                                r.category
-                              }
+                              <span className="category">
+                                {
+                                  r.category
+                                }
+                              </span>
                             </td>
 
                             <td>
@@ -638,11 +580,12 @@ export default function App() {
                 </div>
               </div>
 
+              {/* CHARTS */}
+
               <div className="chartGrid">
                 <div className="card">
                   <div className="cardTitle">
-                    Financial
-                    Trend
+                    Financial Trend
                   </div>
 
                   <div className="chartWrap">
@@ -677,108 +620,312 @@ export default function App() {
             </>
           )}
 
-          {activePage ===
-            "paynow" && (
-            <div className="pageCard">
-              <h1>Pay Now</h1>
-            </div>
-          )}
+          {/* PAY NOW */}
 
           {activePage ===
-            "history" && (
-            <div className="pageCard">
+            "paynow" && (
+            <div className="payNowPage">
               <div className="pageHeading">
                 <h1>
-                  Payment
-                  History
+                  Pay Maintenance
                 </h1>
 
                 <p>
-                  View all
+                  Securely pay
+                  your monthly
+                  society
                   maintenance
-                  payments and
-                  transaction
-                  records.
+                  using QR
+                  payment or
+                  direct bank
+                  transfer.
                 </p>
               </div>
 
-              <div className="historyList">
-                {income.map(
-                  (item) => (
-                    <div
-                      className="historyCard"
-                      key={item.id}
-                    >
-                      <div>
-                        <div className="historyTitle">
-                          {
-                            item.category
-                          }
-                        </div>
+              <div className="payGrid">
+                <div className="payCard">
+                  <div className="payCardTitle">
+                    Scan & Pay
+                  </div>
 
-                        <div className="historyDate">
-                          {new Date(
-                            item.date
-                          )
-                            .toLocaleDateString(
-                              "en-GB",
-                              {
-                                day: "2-digit",
-                                month:
-                                  "short",
-                                year:
-                                  "numeric",
-                              }
-                            )
-                            .replace(
-                              ",",
-                              ""
-                            )}
-                        </div>
-                      </div>
+                  <div className="qrWrapper">
+                    <img
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=GreenMeadowsMaintenance"
+                      alt="QR"
+                    />
+                  </div>
 
-                      <div className="historyRight">
-                        <div className="historyAmount">
-                          ₹
-                          {fmt(
-                            item.amount
-                          )}
-                        </div>
+                  <div className="paySub">
+                    UPI ID:
+                    greenmeadows@upi
+                  </div>
+                </div>
 
-                        <div className="paidBadge">
-                          Paid
-                        </div>
-                      </div>
+                <div className="payCard">
+                  <div className="payCardTitle">
+                    Bank Details
+                  </div>
+
+                  <div className="bankList">
+                    <div className="bankRow">
+                      <span>
+                        Account
+                        Name
+                      </span>
+
+                      <strong>
+                        Green
+                        Meadows
+                        Society
+                      </strong>
                     </div>
-                  )
-                )}
+
+                    <div className="bankRow">
+                      <span>
+                        Bank
+                        Name
+                      </span>
+
+                      <strong>
+                        HDFC
+                        Bank
+                      </strong>
+                    </div>
+
+                    <div className="bankRow">
+                      <span>
+                        Account
+                        Number
+                      </span>
+
+                      <strong>
+                        50100234567891
+                      </strong>
+                    </div>
+
+                    <div className="bankRow">
+                      <span>
+                        IFSC
+                        Code
+                      </span>
+
+                      <strong>
+                        HDFC0001234
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="noticeCard">
+                ⚠ Kindly
+                complete the
+                maintenance
+                payment before
+                the 10th of
+                every month to
+                avoid late
+                charges.
               </div>
             </div>
           )}
+
+          {/* RULES */}
+
+          {activePage ===
+            "rules" && (
+            <div className="pageCard">
+              <h1>
+                Society Rules
+              </h1>
+
+              <p className="rulesText">
+                Please follow
+                society
+                guidelines to
+                maintain a
+                peaceful and
+                clean
+                environment.
+              </p>
+
+              <ul className="rulesList">
+                <li>
+                  Maintenance
+                  payment
+                  before 10th
+                  of every
+                  month.
+                </li>
+
+                <li>
+                  No loud noise
+                  after 10 PM.
+                </li>
+
+                <li>
+                  Keep common
+                  areas clean.
+                </li>
+
+                <li>
+                  Visitor
+                  parking only
+                  in designated
+                  areas.
+                </li>
+              </ul>
+
+              <div className="pdfCard">
+                <div>
+                  <div className="pdfTitle">
+                    Society Rule
+                    Book
+                  </div>
+
+                  <div className="pdfSub">
+                    View or
+                    download
+                    official
+                    PDF.
+                  </div>
+                </div>
+
+                <a
+                  href="/society-rules.pdf"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pdfBtn"
+                >
+                  View PDF
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* CONTACT */}
+
+          {activePage ===
+            "contact" && (
+            <div className="pageCard">
+              <h1>Contact</h1>
+
+              <div className="contactBox">
+                <p>
+                  📞 +91
+                  9876543210
+                </p>
+
+                <p>
+                  📧
+                  support@greenmeadows.com
+                </p>
+
+                <p>
+                  🕒 9 AM - 6
+                  PM
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* SETTINGS */}
+
+          {activePage ===
+            "settings" && (
+            <div className="pageCard">
+              <h1>Settings</h1>
+
+              <p>
+                Settings page
+                content goes
+                here.
+              </p>
+            </div>
+          )}
+
+          {/* MOBILE NAV */}
+
+          <div className="mobileNav">
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "dashboard"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "dashboard"
+                )
+              }
+            >
+              <LayoutDashboard
+                size={20}
+              />
+              <span>
+                Dashboard
+              </span>
+            </div>
+
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "paynow"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "paynow"
+                )
+              }
+            >
+              <Wallet size={20} />
+              <span>Pay</span>
+            </div>
+
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "rules"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "rules"
+                )
+              }
+            >
+              <FileText
+                size={20}
+              />
+              <span>Rules</span>
+            </div>
+
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "contact"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "contact"
+                )
+              }
+            >
+              <Phone size={20} />
+              <span>
+                Contact
+              </span>
+            </div>
+          </div>
         </main>
       </div>
     </>
-  );
-}
-
-function SidebarItem({
-  icon,
-  label,
-  active,
-  onClick,
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className={`sideItem ${
-        active
-          ? "sideActive"
-          : ""
-      }`}
-    >
-      {icon}
-      {label}
-    </div>
   );
 }
 
@@ -815,6 +962,27 @@ function Kpi({
   );
 }
 
+function SidebarItem({
+  icon,
+  label,
+  active,
+  onClick,
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`sideItem ${
+        active
+          ? "sideActive"
+          : ""
+      }`}
+    >
+      {icon}
+      {label}
+    </div>
+  );
+}
+
 const css = `
 *{
   margin:0;
@@ -836,7 +1004,11 @@ body{
 
 .sidebar{
   background:#111827;
+  border-right:1px solid rgba(255,255,255,.06);
   padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
 }
 
 .brand{
@@ -871,15 +1043,60 @@ body{
   border-radius:16px;
   color:#94A3B8;
   cursor:pointer;
+  transition:.2s;
+}
+
+.sideItem:hover{
+  background:rgba(255,255,255,.05);
 }
 
 .sideActive{
-  background:rgba(59,130,246,.2);
+  background:linear-gradient(
+    135deg,
+    rgba(59,130,246,.2),
+    rgba(139,92,246,.2)
+  );
   color:white;
+}
+
+.profile{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:rgba(255,255,255,.04);
+  padding:16px;
+  border-radius:20px;
+}
+
+.avatar{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:#3B82F6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
 }
 
 .main{
   padding:32px;
+  overflow:auto;
+}
+
+.topbar{
+  margin-bottom:28px;
+}
+
+.eyebrow{
+  color:#64748B;
+  font-size:12px;
+}
+
+.title{
+  font-size:42px;
+  font-weight:800;
+  margin-top:8px;
 }
 
 .kpiGrid{
@@ -893,8 +1110,44 @@ body{
 .tableCard,
 .pageCard{
   background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
   border-radius:28px;
   padding:24px;
+}
+
+.kpiTop{
+  display:flex;
+  justify-content:space-between;
+}
+
+.kpiValue{
+  margin-top:0;
+  font-size:32px;
+  font-weight:800;
+}
+
+.kpiIcon{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.green{
+  background:rgba(34,197,94,.15);
+  color:#22C55E;
+}
+
+.red{
+  background:rgba(239,68,68,.15);
+  color:#EF4444;
+}
+
+.blue{
+  background:rgba(59,130,246,.15);
+  color:#3B82F6;
 }
 
 .tableCard{
@@ -904,12 +1157,23 @@ body{
 .tableHeader{
   display:flex;
   justify-content:space-between;
-  gap:20px;
+  align-items:center;
+  margin-bottom:24px;
+}
+
+.tableTitle{
+  font-size:24px;
+  font-weight:800;
+}
+
+.tableSub{
+  color:#94A3B8;
+  margin-top:6px;
 }
 
 .filters{
   display:flex;
-  gap:12px;
+  gap:14px;
 }
 
 .search{
@@ -918,7 +1182,7 @@ body{
   gap:10px;
   background:#111827;
   padding:14px 18px;
-  border-radius:16px;
+  border-radius:18px;
 }
 
 .search input{
@@ -926,14 +1190,34 @@ body{
   border:none;
   outline:none;
   color:white;
+  width:100%;
 }
 
 select{
   background:#111827;
-  color:white;
   border:none;
-  border-radius:16px;
+  color:white;
+  border-radius:18px;
   padding:14px;
+}
+
+.tableWrap{
+  overflow:auto;
+}
+
+.modernTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+}
+
+.modernTable tbody tr{
+  background:rgba(255,255,255,.04);
+}
+
+.modernTable td,
+.modernTable th{
+  padding:18px;
 }
 
 .chartGrid{
@@ -945,68 +1229,168 @@ select{
 
 .chartWrap{
   height:320px;
+  margin-top:20px;
 }
 
-.reminderCard{
+.status{
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:14px;
+}
+
+.status.income{
+  background:rgba(34,197,94,.15);
+  color:#22C55E;
+}
+
+.status.expense{
+  background:rgba(239,68,68,.15);
+  color:#EF4444;
+}
+
+.amount{
+  font-weight:700;
+}
+
+.greenText{
+  color:#22C55E;
+}
+
+.redText{
+  color:#EF4444;
+}
+
+.payNowPage{
+  margin-top:20px;
+}
+
+.pageHeading h1{
+  font-size:40px;
+  font-weight:800;
+}
+
+.pageHeading p{
+  color:#94A3B8;
+  margin-top:10px;
+  line-height:1.7;
+}
+
+.payGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  margin-top:28px;
+}
+
+.payCard{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:30px;
+  padding:30px;
+}
+
+.payCardTitle{
+  font-size:22px;
+  font-weight:700;
   margin-bottom:24px;
-  background:linear-gradient(
-    135deg,
-    rgba(59,130,246,.18),
-    rgba(139,92,246,.18)
-  );
+}
+
+.qrWrapper{
+  background:white;
   border-radius:24px;
-  padding:22px;
+  padding:20px;
+  display:flex;
+  justify-content:center;
+}
+
+.qrWrapper img{
+  width:220px;
+}
+
+.paySub{
+  margin-top:20px;
+  text-align:center;
+}
+
+.bankList{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.bankRow{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  padding-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.noticeCard{
+  margin-top:28px;
+  background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.25);
+  color:#FCD34D;
+  padding:22px 24px;
+  border-radius:22px;
+  line-height:1.8;
+}
+
+.rulesText{
+  margin-top:14px;
+  color:#94A3B8;
+  line-height:1.8;
+}
+
+.rulesList{
+  margin-top:20px;
+  padding-left:20px;
+  line-height:2;
+}
+
+.pdfCard{
+  margin-top:32px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:24px;
+  padding:24px;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.reminderLeft{
-  display:flex;
-  gap:16px;
-}
-
-.reminderBtn{
-  border:none;
-  background:white;
+.pdfBtn{
+  background:linear-gradient(
+    135deg,
+    #3B82F6,
+    #8B5CF6
+  );
+  color:white;
+  text-decoration:none;
   padding:14px 22px;
   border-radius:16px;
   font-weight:700;
 }
 
-.lateWarning{
-  margin-bottom:24px;
-  background:rgba(239,68,68,.15);
-  color:#FCA5A5;
-  padding:18px;
-  border-radius:18px;
-}
-
-.historyList{
-  margin-top:24px;
+.contactBox{
+  margin-top:20px;
   display:flex;
   flex-direction:column;
   gap:16px;
 }
 
-.historyCard{
-  background:rgba(255,255,255,.04);
-  padding:22px;
-  border-radius:22px;
+.mobileNav{
+  display:none;
+}
+
+.loader{
+  height:100vh;
   display:flex;
-  justify-content:space-between;
+  align-items:center;
+  justify-content:center;
 }
 
-.paidBadge{
-  margin-top:8px;
-  background:rgba(34,197,94,.15);
-  color:#22C55E;
-  padding:8px 14px;
-  border-radius:999px;
-  display:inline-block;
-}
-
-@media(max-width:768px){
+@media(max-width:1200px){
 
   .layout{
     grid-template-columns:1fr;
@@ -1015,34 +1399,84 @@ select{
   .sidebar{
     display:none;
   }
+}
 
-  .kpiGrid,
-  .chartGrid{
-    grid-template-columns:1fr;
+@media(max-width:768px){
+
+  body{
+    padding-bottom:90px;
+  }
+
+  .main{
+    padding:18px;
+  }
+
+  .title{
+    font-size:30px;
   }
 
   .tableHeader{
     flex-direction:column;
+    align-items:flex-start;
+    gap:18px;
   }
 
   .filters{
+    width:100%;
     flex-direction:column;
+    gap:12px;
   }
 
-  .search,
+  .search{
+    width:100%;
+  }
+
   select{
     width:100%;
   }
 
-  .historyCard{
-    flex-direction:column;
-    gap:18px;
+  .kpiGrid,
+  .chartGrid,
+  .payGrid{
+    grid-template-columns:1fr;
   }
 
-  .reminderCard{
+  .modernTable{
+    min-width:650px;
+  }
+
+  .pdfCard{
     flex-direction:column;
     align-items:flex-start;
     gap:18px;
+  }
+
+  .mobileNav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:74px;
+    background:#111827;
+    border-top:1px solid rgba(255,255,255,.08);
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:999;
+  }
+
+  .mobileItem{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    color:#94A3B8;
+    font-size:11px;
+    cursor:pointer;
+  }
+
+  .mobileActive{
+    color:white;
   }
 }
 `;
