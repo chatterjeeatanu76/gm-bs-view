@@ -10,6 +10,7 @@ import {
   Search,
   FileText,
   Phone,
+  History,
 } from "lucide-react";
 
 import {
@@ -56,29 +57,18 @@ const fmt = (n) =>
   new Intl.NumberFormat("en-IN").format(Number(n || 0));
 
 export default function App() {
-  const [transactions, setTransactions] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [search, setSearch] =
-    useState("");
-
-  const [month, setMonth] =
-    useState("");
-
-  const [activePage, setActivePage] =
-    useState("dashboard");
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [month, setMonth] = useState("");
+  const [activePage, setActivePage] = useState("dashboard");
 
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
         .from("transactions")
         .select("*")
-        .order("date", {
-          ascending: false,
-        });
+        .order("date", { ascending: false });
 
       setTransactions(data || []);
       setLoading(false);
@@ -89,132 +79,61 @@ export default function App() {
 
   const filtered = useMemo(() => {
     return transactions.filter((row) => {
-      const text = Object.values(row)
-        .join(" ")
-        .toLowerCase();
-
+      const text = Object.values(row).join(" ").toLowerCase();
       return (
-        (!search ||
-          text.includes(
-            search.toLowerCase()
-          )) &&
-        (!month ||
-          row.date?.includes(
-            `-${month}-`
-          ))
+        (!search || text.includes(search.toLowerCase())) &&
+        (!month || row.date?.includes(`-${month}-`))
       );
     });
   }, [transactions, search, month]);
 
-  const income = transactions.filter(
-    (x) => x.type === "income"
-  );
+  const income = transactions.filter((x) => x.type === "income");
+  const expenses = transactions.filter((x) => x.type === "expense");
 
-  const expenses = transactions.filter(
-    (x) => x.type === "expense"
-  );
-
-  const totalIncome = income.reduce(
-    (a, b) =>
-      a + Number(b.amount || 0),
-    0
-  );
-
-  const totalExpense = expenses.reduce(
-    (a, b) =>
-      a + Number(b.amount || 0),
-    0
-  );
-
-  const balance =
-    totalIncome - totalExpense;
+  const totalIncome = income.reduce((a, b) => a + Number(b.amount || 0), 0);
+  const totalExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
+  const balance = totalIncome - totalExpense;
 
   const lineData = {
-    labels: MONTHS.slice(-6).map(
-      ([, l]) => l.slice(0, 3)
-    ),
-
+    labels: MONTHS.slice(-6).map(([, l]) => l.slice(0, 3)),
     datasets: [
       {
         label: "Income",
-
-        data: MONTHS.slice(-6).map(
-          ([m]) =>
-            income
-              .filter((r) =>
-                r.date?.includes(
-                  `-${m}-`
-                )
-              )
-              .reduce(
-                (a, b) =>
-                  a +
-                  Number(
-                    b.amount || 0
-                  ),
-                0
-              )
+        data: MONTHS.slice(-6).map(([m]) =>
+          income
+            .filter((r) => r.date?.includes(`-${m}-`))
+            .reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-
         borderColor: "#22c55e",
-        backgroundColor:
-          "rgba(34,197,94,.08)",
-
+        backgroundColor: "rgba(34,197,94,.08)",
         fill: true,
         tension: 0.4,
       },
-
       {
         label: "Expense",
-
-        data: MONTHS.slice(-6).map(
-          ([m]) =>
-            expenses
-              .filter((r) =>
-                r.date?.includes(
-                  `-${m}-`
-                )
-              )
-              .reduce(
-                (a, b) =>
-                  a +
-                  Number(
-                    b.amount || 0
-                  ),
-                0
-              )
+        data: MONTHS.slice(-6).map(([m]) =>
+          expenses
+            .filter((r) => r.date?.includes(`-${m}-`))
+            .reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-
         borderColor: "#ef4444",
-        backgroundColor:
-          "rgba(239,68,68,.08)",
-
+        backgroundColor: "rgba(239,68,68,.08)",
         fill: true,
         tension: 0.4,
       },
     ],
   };
 
-  const expenseMap = expenses.reduce(
-    (acc, item) => {
-      acc[item.category] =
-        (acc[item.category] || 0) +
-        Number(item.amount);
-
-      return acc;
-    },
-    {}
-  );
+  const expenseMap = expenses.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + Number(item.amount);
+    return acc;
+  }, {});
 
   const pieData = {
     labels: Object.keys(expenseMap),
-
     datasets: [
       {
-        data: Object.values(
-          expenseMap
-        ),
-
+        data: Object.values(expenseMap),
         backgroundColor: [
           "#3B82F6",
           "#8B5CF6",
@@ -228,11 +147,7 @@ export default function App() {
   };
 
   if (loading) {
-    return (
-      <div className="loader">
-        Loading dashboard...
-      </div>
-    );
+    return <div className="loader">Loading dashboard...</div>;
   }
 
   return (
@@ -241,251 +156,118 @@ export default function App() {
 
       <div className="layout">
         {/* SIDEBAR */}
-
         <aside className="sidebar">
           <div>
-            <div className="brand">
-              GM
-            </div>
-
-            <div className="brandText">
-              Green Meadows
-            </div>
+            <div className="brand">GM</div>
+            <div className="brandText">Green Meadows</div>
 
             <div className="menu">
               <SidebarItem
-                icon={
-                  <LayoutDashboard
-                    size={18}
-                  />
-                }
+                icon={<LayoutDashboard size={18} />}
                 label="Dashboard"
-                active={
-                  activePage ===
-                  "dashboard"
-                }
-                onClick={() =>
-                  setActivePage(
-                    "dashboard"
-                  )
-                }
+                active={activePage === "dashboard"}
+                onClick={() => setActivePage("dashboard")}
               />
-
               <SidebarItem
-                icon={
-                  <Wallet size={18} />
-                }
+                icon={<Wallet size={18} />}
                 label="Pay Now"
-                active={
-                  activePage ===
-                  "paynow"
-                }
-                onClick={() =>
-                  setActivePage(
-                    "paynow"
-                  )
-                }
+                active={activePage === "paynow"}
+                onClick={() => setActivePage("paynow")}
               />
-
               <SidebarItem
-                icon={
-                  <FileText
-                    size={18}
-                  />
-                }
+                icon={<History size={18} />}
+                label="Payment History"
+                active={activePage === "history"}
+                onClick={() => setActivePage("history")}
+              />
+              <SidebarItem
+                icon={<FileText size={18} />}
                 label="Society Rules"
-                active={
-                  activePage ===
-                  "rules"
-                }
-                onClick={() =>
-                  setActivePage(
-                    "rules"
-                  )
-                }
+                active={activePage === "rules"}
+                onClick={() => setActivePage("rules")}
               />
-
               <SidebarItem
-                icon={
-                  <Phone size={18} />
-                }
+                icon={<Phone size={18} />}
                 label="Contact"
-                active={
-                  activePage ===
-                  "contact"
-                }
-                onClick={() =>
-                  setActivePage(
-                    "contact"
-                  )
-                }
+                active={activePage === "contact"}
+                onClick={() => setActivePage("contact")}
               />
-
               <SidebarItem
-                icon={
-                  <Settings
-                    size={18}
-                  />
-                }
+                icon={<Settings size={18} />}
                 label="Settings"
-                active={
-                  activePage ===
-                  "settings"
-                }
-                onClick={() =>
-                  setActivePage(
-                    "settings"
-                  )
-                }
+                active={activePage === "settings"}
+                onClick={() => setActivePage("settings")}
               />
             </div>
           </div>
 
           <div className="profile">
-            <div className="avatar">
-              GM
-            </div>
-
+            <div className="avatar">GM</div>
             <div>
-              <div className="profileName">
-                Block A
-              </div>
-
-              <div className="profileSub">
-                Finance Admin
-              </div>
+              <div className="profileName">Block A</div>
+              <div className="profileSub">Finance Admin</div>
             </div>
           </div>
         </aside>
 
         {/* MAIN */}
-
         <main className="main">
           {/* DASHBOARD */}
-
-          {activePage ===
-            "dashboard" && (
+          {activePage === "dashboard" && (
             <>
               <div className="topbar">
                 <div>
-                  <div className="eyebrow">
-                    FINANCE OVERVIEW
-                  </div>
-
-                  <div className="title">
-                    Balance Sheet
-                  </div>
+                  <div className="eyebrow">FINANCE OVERVIEW</div>
+                  <div className="title">Balance Sheet</div>
                 </div>
               </div>
 
               {/* KPI */}
-
               <div className="kpiGrid">
                 <Kpi
-                  icon={
-                    <TrendingUp
-                      size={18}
-                    />
-                  }
+                  icon={<TrendingUp size={18} />}
                   label="Income"
-                  value={`₹${fmt(
-                    totalIncome
-                  )}`}
+                  value={`₹${fmt(totalIncome)}`}
                   green
                 />
-
                 <Kpi
-                  icon={
-                    <TrendingDown
-                      size={18}
-                    />
-                  }
+                  icon={<TrendingDown size={18} />}
                   label="Expense"
-                  value={`₹${fmt(
-                    totalExpense
-                  )}`}
+                  value={`₹${fmt(totalExpense)}`}
                   red
                 />
-
                 <Kpi
-                  icon={
-                    <Wallet
-                      size={18}
-                    />
-                  }
+                  icon={<Wallet size={18} />}
                   label="Balance"
-                  value={`₹${fmt(
-                    balance
-                  )}`}
+                  value={`₹${fmt(balance)}`}
                   blue
                 />
               </div>
 
-              {/* TABLE */}
-
+              {/* TRANSACTIONS TABLE */}
               <div className="tableCard">
                 <div className="tableHeader">
                   <div>
-                    <div className="tableTitle">
-                      Transactions
-                    </div>
-
-                    <div className="tableSub">
-                      Monthly overview
-                      of all
-                      transactions
-                    </div>
+                    <div className="tableTitle">Transactions</div>
+                    <div className="tableSub">Monthly overview of all transactions</div>
                   </div>
-
                   <div className="filters">
                     <div className="search">
-                      <Search
-                        size={15}
-                      />
-
+                      <Search size={15} />
                       <input
                         placeholder="Search transactions..."
-                        value={
-                          search
-                        }
-                        onChange={(
-                          e
-                        ) =>
-                          setSearch(
-                            e.target
-                              .value
-                          )
-                        }
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                       />
                     </div>
-
                     <select
                       value={month}
-                      onChange={(
-                        e
-                      ) =>
-                        setMonth(
-                          e.target
-                            .value
-                        )
-                      }
+                      onChange={(e) => setMonth(e.target.value)}
                     >
-                      <option value="">
-                        All Months
-                      </option>
-
-                      {MONTHS.map(
-                        ([v, l]) => (
-                          <option
-                            key={v}
-                            value={
-                              v
-                            }
-                          >
-                            {l}
-                          </option>
-                        )
-                      )}
+                      <option value="">All Months</option>
+                      {MONTHS.map(([v, l]) => (
+                        <option key={v} value={v}>{l}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -498,122 +280,54 @@ export default function App() {
                         <th>Flat</th>
                         <th>Category</th>
                         <th>Status</th>
-                        <th align="right">
-                          Amount
-                        </th>
+                        <th align="right">Amount</th>
                       </tr>
                     </thead>
-
                     <tbody>
-                      {filtered.map(
-                        (r) => (
-                          <tr
-                            key={
-                              r.id
-                            }
-                          >
-                            <td>
-                              <div className="date">
-                                {new Date(
-                                  r.date
-                                )
-                                  .toLocaleDateString(
-                                    "en-GB",
-                                    {
-                                      day: "2-digit",
-                                      month:
-                                        "short",
-                                    }
-                                  )
-                                  .replace(
-                                    ",",
-                                    ""
-                                  )}
-                              </div>
-                            </td>
-
-                            <td>
-                              <div className="flat">
-                                {r.flat_no ||
-                                  "-"}
-                              </div>
-                            </td>
-
-                            <td>
-                              <span className="category">
-                                {
-                                  r.category
-                                }
-                              </span>
-                            </td>
-
-                            <td>
-                              <span
-                                className={`status ${r.type}`}
-                              >
-                                {
-                                  r.type
-                                }
-                              </span>
-                            </td>
-
-                            <td align="right">
-                              <span
-                                className={`amount ${
-                                  r.type ===
-                                  "income"
-                                    ? "greenText"
-                                    : "redText"
-                                }`}
-                              >
-                                ₹
-                                {fmt(
-                                  r.amount
-                                )}
-                              </span>
-                            </td>
-                          </tr>
-                        )
-                      )}
+                      {filtered.map((r) => (
+                        <tr key={r.id}>
+                          <td>
+                            {new Date(r.date)
+                              .toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                              })
+                              .replace(",", "")}
+                          </td>
+                          <td>{r.flat_no || "-"}</td>
+                          <td>
+                            <span className="category">{r.category}</span>
+                          </td>
+                          <td>
+                            <span className={`status ${r.type}`}>{r.type}</span>
+                          </td>
+                          <td align="right">
+                            <span className={`amount ${r.type === "income" ? "greenText" : "redText"}`}>
+                              ₹{fmt(r.amount)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               </div>
 
               {/* CHARTS */}
-
               <div className="chartGrid">
                 <div className="card">
-                  <div className="cardTitle">
-                    Financial Trend
-                  </div>
-
+                  <div className="cardTitle">Financial Trend</div>
                   <div className="chartWrap">
                     <Line
-                      data={
-                        lineData
-                      }
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio:
-                          false,
-                      }}
+                      data={lineData}
+                      options={{ responsive: true, maintainAspectRatio: false }}
                     />
                   </div>
                 </div>
-
                 <div className="card">
-                  <div className="cardTitle">
-                    Expense
-                    Breakdown
-                  </div>
-
+                  <div className="cardTitle">Expense Breakdown</div>
                   <div className="chartWrap">
-                    <Doughnut
-                      data={
-                        pieData
-                      }
-                    />
+                    <Doughnut data={pieData} />
                   </div>
                 </div>
               </div>
@@ -621,176 +335,134 @@ export default function App() {
           )}
 
           {/* PAY NOW */}
-
-          {activePage ===
-            "paynow" && (
+          {activePage === "paynow" && (
             <div className="payNowPage">
               <div className="pageHeading">
-                <h1>
-                  Pay Maintenance
-                </h1>
-
+                <h1>Pay Maintenance</h1>
                 <p>
-                  Securely pay
-                  your monthly
-                  society
-                  maintenance
-                  using QR
-                  payment or
-                  direct bank
-                  transfer.
+                  Securely pay your monthly society maintenance using QR
+                  payment or direct bank transfer.
                 </p>
               </div>
 
               <div className="payGrid">
                 <div className="payCard">
-                  <div className="payCardTitle">
-                    Scan & Pay
-                  </div>
-
+                  <div className="payCardTitle">Scan &amp; Pay</div>
                   <div className="qrWrapper">
                     <img
                       src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=GreenMeadowsMaintenance"
                       alt="QR"
                     />
                   </div>
-
-                  <div className="paySub">
-                    UPI ID:
-                    greenmeadows@upi
-                  </div>
+                  <div className="paySub">UPI ID: greenmeadows@upi</div>
                 </div>
 
                 <div className="payCard">
-                  <div className="payCardTitle">
-                    Bank Details
-                  </div>
-
+                  <div className="payCardTitle">Bank Details</div>
                   <div className="bankList">
                     <div className="bankRow">
-                      <span>
-                        Account
-                        Name
-                      </span>
-
-                      <strong>
-                        Green
-                        Meadows
-                        Society
-                      </strong>
+                      <span>Account Name</span>
+                      <strong>Green Meadows Society</strong>
                     </div>
-
                     <div className="bankRow">
-                      <span>
-                        Bank
-                        Name
-                      </span>
-
-                      <strong>
-                        HDFC
-                        Bank
-                      </strong>
+                      <span>Bank Name</span>
+                      <strong>HDFC Bank</strong>
                     </div>
-
                     <div className="bankRow">
-                      <span>
-                        Account
-                        Number
-                      </span>
-
-                      <strong>
-                        50100234567891
-                      </strong>
+                      <span>Account Number</span>
+                      <strong>50100234567891</strong>
                     </div>
-
                     <div className="bankRow">
-                      <span>
-                        IFSC
-                        Code
-                      </span>
-
-                      <strong>
-                        HDFC0001234
-                      </strong>
+                      <span>IFSC Code</span>
+                      <strong>HDFC0001234</strong>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="noticeCard">
-                ⚠ Kindly
-                complete the
-                maintenance
-                payment before
-                the 10th of
-                every month to
-                avoid late
-                charges.
+                ⚠ Kindly complete the maintenance payment before the 10th of
+                every month to avoid late charges.
               </div>
             </div>
           )}
 
-          {/* RULES */}
-
-          {activePage ===
-            "rules" && (
+          {/* PAYMENT HISTORY */}
+          {activePage === "history" && (
             <div className="pageCard">
-              <h1>
-                Society Rules
-              </h1>
+              <div className="historyTop">
+                <h1>Payment History</h1>
+                <p className="historySub">
+                  Complete maintenance payment records of all residents.
+                </p>
+              </div>
 
+              <div className="tableWrap">
+                <table className="modernTable">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Flat</th>
+                      <th>Category</th>
+                      <th>Status</th>
+                      <th align="right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions
+                      .filter((item) => item.type === "income")
+                      .map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            {new Date(item.date)
+                              .toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })
+                              .replace(",", "")}
+                          </td>
+                          <td>{item.flat_no || "-"}</td>
+                          <td>
+                            <span className="category">
+                              {item.category || "Maintenance"}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="paidStatus">Paid</span>
+                          </td>
+                          <td align="right">
+                            <span className="greenText amount">
+                              ₹{fmt(item.amount)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* SOCIETY RULES */}
+          {activePage === "rules" && (
+            <div className="pageCard">
+              <h1>Society Rules</h1>
               <p className="rulesText">
-                Please follow
-                society
-                guidelines to
-                maintain a
-                peaceful and
-                clean
-                environment.
+                Please follow society guidelines to maintain a peaceful and
+                clean environment.
               </p>
-
               <ul className="rulesList">
-                <li>
-                  Maintenance
-                  payment
-                  before 10th
-                  of every
-                  month.
-                </li>
-
-                <li>
-                  No loud noise
-                  after 10 PM.
-                </li>
-
-                <li>
-                  Keep common
-                  areas clean.
-                </li>
-
-                <li>
-                  Visitor
-                  parking only
-                  in designated
-                  areas.
-                </li>
+                <li>Maintenance payment before 10th of every month.</li>
+                <li>No loud noise after 10 PM.</li>
+                <li>Keep common areas clean.</li>
+                <li>Visitor parking only in designated areas.</li>
               </ul>
-
               <div className="pdfCard">
                 <div>
-                  <div className="pdfTitle">
-                    Society Rule
-                    Book
-                  </div>
-
-                  <div className="pdfSub">
-                    View or
-                    download
-                    official
-                    PDF.
-                  </div>
+                  <div className="pdfTitle">Society Rule Book</div>
+                  <div className="pdfSub">View or download official PDF.</div>
                 </div>
-
                 <a
                   href="/society-rules.pdf"
                   target="_blank"
@@ -804,123 +476,61 @@ export default function App() {
           )}
 
           {/* CONTACT */}
-
-          {activePage ===
-            "contact" && (
+          {activePage === "contact" && (
             <div className="pageCard">
               <h1>Contact</h1>
-
               <div className="contactBox">
-                <p>
-                  📞 +91
-                  9876543210
-                </p>
-
-                <p>
-                  📧
-                  support@greenmeadows.com
-                </p>
-
-                <p>
-                  🕒 9 AM - 6
-                  PM
-                </p>
+                <p>📞 +91 9876543210</p>
+                <p>📧 support@greenmeadows.com</p>
+                <p>🕒 9 AM - 6 PM</p>
               </div>
             </div>
           )}
 
           {/* SETTINGS */}
-
-          {activePage ===
-            "settings" && (
+          {activePage === "settings" && (
             <div className="pageCard">
               <h1>Settings</h1>
-
-              <p>
-                Settings page
-                content goes
-                here.
-              </p>
+              <p>Settings page content goes here.</p>
             </div>
           )}
 
           {/* MOBILE NAV */}
-
           <div className="mobileNav">
             <div
-              className={`mobileItem ${
-                activePage ===
-                "dashboard"
-                  ? "mobileActive"
-                  : ""
-              }`}
-              onClick={() =>
-                setActivePage(
-                  "dashboard"
-                )
-              }
+              className={`mobileItem ${activePage === "dashboard" ? "mobileActive" : ""}`}
+              onClick={() => setActivePage("dashboard")}
             >
-              <LayoutDashboard
-                size={20}
-              />
-              <span>
-                Dashboard
-              </span>
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
             </div>
-
             <div
-              className={`mobileItem ${
-                activePage ===
-                "paynow"
-                  ? "mobileActive"
-                  : ""
-              }`}
-              onClick={() =>
-                setActivePage(
-                  "paynow"
-                )
-              }
+              className={`mobileItem ${activePage === "paynow" ? "mobileActive" : ""}`}
+              onClick={() => setActivePage("paynow")}
             >
               <Wallet size={20} />
               <span>Pay</span>
             </div>
-
             <div
-              className={`mobileItem ${
-                activePage ===
-                "rules"
-                  ? "mobileActive"
-                  : ""
-              }`}
-              onClick={() =>
-                setActivePage(
-                  "rules"
-                )
-              }
+              className={`mobileItem ${activePage === "history" ? "mobileActive" : ""}`}
+              onClick={() => setActivePage("history")}
             >
-              <FileText
-                size={20}
-              />
+              <History size={20} />
+              <span>History</span>
+            </div>
+            <div
+              className={`mobileItem ${activePage === "rules" ? "mobileActive" : ""}`}
+              onClick={() => setActivePage("rules")}
+            >
+              <FileText size={20} />
               <span>Rules</span>
             </div>
-
             <div
-              className={`mobileItem ${
-                activePage ===
-                "contact"
-                  ? "mobileActive"
-                  : ""
-              }`}
-              onClick={() =>
-                setActivePage(
-                  "contact"
-                )
-              }
+              className={`mobileItem ${activePage === "contact" ? "mobileActive" : ""}`}
+              onClick={() => setActivePage("contact")}
             >
               <Phone size={20} />
-              <span>
-                Contact
-              </span>
+              <span>Contact</span>
             </div>
           </div>
         </main>
@@ -929,53 +539,25 @@ export default function App() {
   );
 }
 
-function Kpi({
-  icon,
-  label,
-  value,
-  green,
-  red,
-  blue,
-}) {
+function Kpi({ icon, label, value, green, red, blue }) {
   return (
     <div className="kpi">
       <div className="kpiTop">
         <div>{label}</div>
-
-        <div
-          className={`kpiIcon ${
-            green
-              ? "green"
-              : red
-              ? "red"
-              : "blue"
-          }`}
-        >
+        <div className={`kpiIcon ${green ? "green" : red ? "red" : "blue"}`}>
           {icon}
         </div>
       </div>
-
-      <div className="kpiValue">
-        {value}
-      </div>
+      <div className="kpiValue">{value}</div>
     </div>
   );
 }
 
-function SidebarItem({
-  icon,
-  label,
-  active,
-  onClick,
-}) {
+function SidebarItem({ icon, label, active, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`sideItem ${
-        active
-          ? "sideActive"
-          : ""
-      }`}
+      className={`sideItem ${active ? "sideActive" : ""}`}
     >
       {icon}
       {label}
@@ -1079,6 +661,16 @@ body{
   font-weight:700;
 }
 
+.profileName{
+  font-weight:600;
+}
+
+.profileSub{
+  color:#64748B;
+  font-size:13px;
+  margin-top:2px;
+}
+
 .main{
   padding:32px;
   overflow:auto;
@@ -1118,10 +710,11 @@ body{
 .kpiTop{
   display:flex;
   justify-content:space-between;
+  align-items:center;
 }
 
 .kpiValue{
-  margin-top:0;
+  margin-top:16px;
   font-size:32px;
   font-weight:800;
 }
@@ -1199,6 +792,7 @@ select{
   color:white;
   border-radius:18px;
   padding:14px;
+  cursor:pointer;
 }
 
 .tableWrap{
@@ -1209,15 +803,36 @@ select{
   width:100%;
   border-collapse:separate;
   border-spacing:0 8px;
+  min-width:600px;
+}
+
+.modernTable thead th{
+  color:#64748B;
+  font-size:12px;
+  text-transform:uppercase;
+  padding:0 18px;
+  text-align:left;
 }
 
 .modernTable tbody tr{
   background:rgba(255,255,255,.04);
+  transition:.2s;
 }
 
-.modernTable td,
-.modernTable th{
+.modernTable tbody tr:hover{
+  background:rgba(255,255,255,.07);
+}
+
+.modernTable td{
   padding:18px;
+}
+
+.modernTable tr td:first-child{
+  border-radius:16px 0 0 16px;
+}
+
+.modernTable tr td:last-child{
+  border-radius:0 16px 16px 0;
 }
 
 .chartGrid{
@@ -1227,15 +842,30 @@ select{
   margin-top:28px;
 }
 
+.cardTitle{
+  font-size:18px;
+  font-weight:700;
+}
+
 .chartWrap{
   height:320px;
   margin-top:20px;
 }
 
+.category{
+  background:rgba(139,92,246,.15);
+  color:#A78BFA;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:13px;
+}
+
 .status{
   padding:8px 14px;
   border-radius:999px;
-  font-size:14px;
+  font-size:13px;
+  font-weight:600;
+  text-transform:capitalize;
 }
 
 .status.income{
@@ -1260,6 +890,7 @@ select{
   color:#EF4444;
 }
 
+/* PAY NOW */
 .payNowPage{
   margin-top:20px;
 }
@@ -1310,6 +941,7 @@ select{
 .paySub{
   margin-top:20px;
   text-align:center;
+  color:#94A3B8;
 }
 
 .bankList{
@@ -1326,6 +958,10 @@ select{
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 
+.bankRow span{
+  color:#94A3B8;
+}
+
 .noticeCard{
   margin-top:28px;
   background:rgba(245,158,11,.12);
@@ -1334,6 +970,37 @@ select{
   padding:22px 24px;
   border-radius:22px;
   line-height:1.8;
+}
+
+/* PAYMENT HISTORY */
+.historyTop{
+  margin-bottom:24px;
+}
+
+.historyTop h1{
+  font-size:36px;
+  font-weight:800;
+}
+
+.historySub{
+  color:#94A3B8;
+  margin-top:8px;
+  line-height:1.7;
+}
+
+.paidStatus{
+  background:rgba(34,197,94,.15);
+  color:#22C55E;
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+}
+
+/* RULES */
+.pageCard h1{
+  font-size:36px;
+  font-weight:800;
 }
 
 .rulesText{
@@ -1345,7 +1012,8 @@ select{
 .rulesList{
   margin-top:20px;
   padding-left:20px;
-  line-height:2;
+  line-height:2.2;
+  color:#CBD5E1;
 }
 
 .pdfCard{
@@ -1359,12 +1027,19 @@ select{
   align-items:center;
 }
 
+.pdfTitle{
+  font-weight:700;
+  font-size:16px;
+}
+
+.pdfSub{
+  color:#94A3B8;
+  margin-top:4px;
+  font-size:14px;
+}
+
 .pdfBtn{
-  background:linear-gradient(
-    135deg,
-    #3B82F6,
-    #8B5CF6
-  );
+  background:linear-gradient(135deg,#3B82F6,#8B5CF6);
   color:white;
   text-decoration:none;
   padding:14px 22px;
@@ -1372,85 +1047,75 @@ select{
   font-weight:700;
 }
 
+/* CONTACT */
 .contactBox{
   margin-top:20px;
   display:flex;
   flex-direction:column;
   gap:16px;
+  color:#CBD5E1;
+  line-height:1.8;
 }
 
-.mobileNav{
-  display:none;
-}
-
+/* LOADER */
 .loader{
   height:100vh;
   display:flex;
   align-items:center;
   justify-content:center;
+  font-size:18px;
+}
+
+/* MOBILE NAV */
+.mobileNav{
+  display:none;
 }
 
 @media(max-width:1200px){
-
   .layout{
     grid-template-columns:1fr;
   }
-
   .sidebar{
     display:none;
   }
 }
 
 @media(max-width:768px){
-
   body{
     padding-bottom:90px;
   }
-
   .main{
     padding:18px;
   }
-
   .title{
     font-size:30px;
   }
-
   .tableHeader{
     flex-direction:column;
     align-items:flex-start;
     gap:18px;
   }
-
   .filters{
     width:100%;
     flex-direction:column;
     gap:12px;
   }
-
   .search{
     width:100%;
   }
-
   select{
     width:100%;
   }
-
   .kpiGrid,
   .chartGrid,
   .payGrid{
     grid-template-columns:1fr;
   }
-
-  .modernTable{
-    min-width:650px;
-  }
-
   .pdfCard{
     flex-direction:column;
     align-items:flex-start;
     gap:18px;
   }
-
   .mobileNav{
     position:fixed;
     bottom:0;
@@ -1464,7 +1129,6 @@ select{
     align-items:center;
     z-index:999;
   }
-
   .mobileItem{
     display:flex;
     flex-direction:column;
@@ -1474,7 +1138,6 @@ select{
     font-size:11px;
     cursor:pointer;
   }
-
   .mobileActive{
     color:white;
   }
