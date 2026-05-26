@@ -56,11 +56,17 @@ const fmt = (n) =>
   new Intl.NumberFormat("en-IN").format(Number(n || 0));
 
 export default function App() {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] =
+    useState([]);
 
-  const [search, setSearch] = useState("");
-  const [month, setMonth] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [search, setSearch] =
+    useState("");
+
+  const [month, setMonth] =
+    useState("");
 
   const [activePage, setActivePage] =
     useState("dashboard");
@@ -89,9 +95,13 @@ export default function App() {
 
       return (
         (!search ||
-          text.includes(search.toLowerCase())) &&
+          text.includes(
+            search.toLowerCase()
+          )) &&
         (!month ||
-          row.date?.includes(`-${month}-`))
+          row.date?.includes(
+            `-${month}-`
+          ))
       );
     });
   }, [transactions, search, month]);
@@ -105,36 +115,45 @@ export default function App() {
   );
 
   const totalIncome = income.reduce(
-    (a, b) => a + Number(b.amount || 0),
+    (a, b) =>
+      a + Number(b.amount || 0),
     0
   );
 
   const totalExpense = expenses.reduce(
-    (a, b) => a + Number(b.amount || 0),
+    (a, b) =>
+      a + Number(b.amount || 0),
     0
   );
 
-  const balance = totalIncome - totalExpense;
+  const balance =
+    totalIncome - totalExpense;
 
   const lineData = {
-    labels: MONTHS.slice(-6).map(([, l]) =>
-      l.slice(0, 3)
+    labels: MONTHS.slice(-6).map(
+      ([, l]) => l.slice(0, 3)
     ),
 
     datasets: [
       {
         label: "Income",
 
-        data: MONTHS.slice(-6).map(([m]) =>
-          income
-            .filter((r) =>
-              r.date?.includes(`-${m}-`)
-            )
-            .reduce(
-              (a, b) =>
-                a + Number(b.amount || 0),
-              0
-            )
+        data: MONTHS.slice(-6).map(
+          ([m]) =>
+            income
+              .filter((r) =>
+                r.date?.includes(
+                  `-${m}-`
+                )
+              )
+              .reduce(
+                (a, b) =>
+                  a +
+                  Number(
+                    b.amount || 0
+                  ),
+                0
+              )
         ),
 
         borderColor: "#22c55e",
@@ -148,16 +167,22 @@ export default function App() {
       {
         label: "Expense",
 
-        data: MONTHS.slice(-6).map(([m]) =>
-          expenses
-            .filter((r) =>
-              r.date?.includes(`-${m}-`)
-            )
-            .reduce(
-              (a, b) =>
-                a + Number(b.amount || 0),
-              0
-            )
+        data: MONTHS.slice(-6).map(
+          ([m]) =>
+            expenses
+              .filter((r) =>
+                r.date?.includes(
+                  `-${m}-`
+                )
+              )
+              .reduce(
+                (a, b) =>
+                  a +
+                  Number(
+                    b.amount || 0
+                  ),
+                0
+              )
         ),
 
         borderColor: "#ef4444",
@@ -186,7 +211,9 @@ export default function App() {
 
     datasets: [
       {
-        data: Object.values(expenseMap),
+        data: Object.values(
+          expenseMap
+        ),
 
         backgroundColor: [
           "#3B82F6",
@@ -228,58 +255,87 @@ export default function App() {
             <div className="menu">
               <SidebarItem
                 icon={
-                  <LayoutDashboard size={18} />
+                  <LayoutDashboard
+                    size={18}
+                  />
                 }
                 label="Dashboard"
                 active={
-                  activePage === "dashboard"
+                  activePage ===
+                  "dashboard"
                 }
                 onClick={() =>
-                  setActivePage("dashboard")
+                  setActivePage(
+                    "dashboard"
+                  )
                 }
               />
 
               <SidebarItem
-                icon={<Wallet size={18} />}
+                icon={
+                  <Wallet size={18} />
+                }
                 label="Pay Now"
                 active={
-                  activePage === "paynow"
+                  activePage ===
+                  "paynow"
                 }
                 onClick={() =>
-                  setActivePage("paynow")
+                  setActivePage(
+                    "paynow"
+                  )
                 }
               />
 
               <SidebarItem
-                icon={<FileText size={18} />}
+                icon={
+                  <FileText
+                    size={18}
+                  />
+                }
                 label="Society Rules"
                 active={
-                  activePage === "rules"
+                  activePage ===
+                  "rules"
                 }
                 onClick={() =>
-                  setActivePage("rules")
+                  setActivePage(
+                    "rules"
+                  )
                 }
               />
 
               <SidebarItem
-                icon={<Phone size={18} />}
+                icon={
+                  <Phone size={18} />
+                }
                 label="Contact"
                 active={
-                  activePage === "contact"
+                  activePage ===
+                  "contact"
                 }
                 onClick={() =>
-                  setActivePage("contact")
+                  setActivePage(
+                    "contact"
+                  )
                 }
               />
 
               <SidebarItem
-                icon={<Settings size={18} />}
+                icon={
+                  <Settings
+                    size={18}
+                  />
+                }
                 label="Settings"
                 active={
-                  activePage === "settings"
+                  activePage ===
+                  "settings"
                 }
                 onClick={() =>
-                  setActivePage("settings")
+                  setActivePage(
+                    "settings"
+                  )
                 }
               />
             </div>
@@ -307,7 +363,8 @@ export default function App() {
         <main className="main">
           {/* DASHBOARD */}
 
-          {activePage === "dashboard" && (
+          {activePage ===
+            "dashboard" && (
             <>
               <div className="topbar">
                 <div>
@@ -326,26 +383,40 @@ export default function App() {
               <div className="kpiGrid">
                 <Kpi
                   icon={
-                    <TrendingUp size={18} />
+                    <TrendingUp
+                      size={18}
+                    />
                   }
                   label="Income"
-                  value={`₹${fmt(totalIncome)}`}
+                  value={`₹${fmt(
+                    totalIncome
+                  )}`}
                   green
                 />
 
                 <Kpi
                   icon={
-                    <TrendingDown size={18} />
+                    <TrendingDown
+                      size={18}
+                    />
                   }
                   label="Expense"
-                  value={`₹${fmt(totalExpense)}`}
+                  value={`₹${fmt(
+                    totalExpense
+                  )}`}
                   red
                 />
 
                 <Kpi
-                  icon={<Wallet size={18} />}
+                  icon={
+                    <Wallet
+                      size={18}
+                    />
+                  }
                   label="Balance"
-                  value={`₹${fmt(balance)}`}
+                  value={`₹${fmt(
+                    balance
+                  )}`}
                   blue
                 />
               </div>
@@ -360,21 +431,29 @@ export default function App() {
                     </div>
 
                     <div className="tableSub">
-                      Monthly overview of all
+                      Monthly overview
+                      of all
                       transactions
                     </div>
                   </div>
 
                   <div className="filters">
                     <div className="search">
-                      <Search size={15} />
+                      <Search
+                        size={15}
+                      />
 
                       <input
                         placeholder="Search transactions..."
-                        value={search}
-                        onChange={(e) =>
+                        value={
+                          search
+                        }
+                        onChange={(
+                          e
+                        ) =>
                           setSearch(
-                            e.target.value
+                            e.target
+                              .value
                           )
                         }
                       />
@@ -382,9 +461,12 @@ export default function App() {
 
                     <select
                       value={month}
-                      onChange={(e) =>
+                      onChange={(
+                        e
+                      ) =>
                         setMonth(
-                          e.target.value
+                          e.target
+                            .value
                         )
                       }
                     >
@@ -392,14 +474,18 @@ export default function App() {
                         All Months
                       </option>
 
-                      {MONTHS.map(([v, l]) => (
-                        <option
-                          key={v}
-                          value={v}
-                        >
-                          {l}
-                        </option>
-                      ))}
+                      {MONTHS.map(
+                        ([v, l]) => (
+                          <option
+                            key={v}
+                            value={
+                              v
+                            }
+                          >
+                            {l}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
                 </div>
@@ -419,65 +505,76 @@ export default function App() {
                     </thead>
 
                     <tbody>
-                      {filtered.map((r) => (
-                        <tr key={r.id}>
-                          <td>
-                            <div className="date">
-                              {new Date(
-                                r.date
-                              )
-                                .toLocaleDateString(
-                                  "en-GB",
-                                  {
-                                    day: "2-digit",
-                                    month:
-                                      "short",
-                                  }
+                      {filtered.map(
+                        (r) => (
+                          <tr
+                            key={
+                              r.id
+                            }
+                          >
+                            <td>
+                              <div className="date">
+                                {new Date(
+                                  r.date
                                 )
-                                .replace(
-                                  ",",
-                                  ""
+                                  .toLocaleDateString(
+                                    "en-GB",
+                                    {
+                                      day: "2-digit",
+                                      month:
+                                        "short",
+                                    }
+                                  )
+                                  .replace(
+                                    ",",
+                                    ""
+                                  )}
+                              </div>
+                            </td>
+
+                            <td>
+                              <div className="flat">
+                                {r.flat_no ||
+                                  "-"}
+                              </div>
+                            </td>
+
+                            <td>
+                              <span className="category">
+                                {
+                                  r.category
+                                }
+                              </span>
+                            </td>
+
+                            <td>
+                              <span
+                                className={`status ${r.type}`}
+                              >
+                                {
+                                  r.type
+                                }
+                              </span>
+                            </td>
+
+                            <td align="right">
+                              <span
+                                className={`amount ${
+                                  r.type ===
+                                  "income"
+                                    ? "greenText"
+                                    : "redText"
+                                }`}
+                              >
+                                ₹
+                                {fmt(
+                                  r.amount
                                 )}
-                            </div>
-                          </td>
-
-                          <td>
-                            <div className="flat">
-                              {r.flat_no || "-"}
-                            </div>
-                          </td>
-
-                          <td>
-                            <span className="category">
-                              {r.category}
-                            </span>
-                          </td>
-
-                          <td>
-                            <span
-                              className={`status ${r.type}`}
-                            >
-                              {r.type}
-                            </span>
-                          </td>
-
-                          <td align="right">
-                            <span
-                              className={`amount ${
-                                r.type ===
-                                "income"
-                                  ? "greenText"
-                                  : "redText"
-                              }`}
-                            >
-                              ₹
-                              {fmt(
-                                r.amount
-                              )}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -493,7 +590,9 @@ export default function App() {
 
                   <div className="chartWrap">
                     <Line
-                      data={lineData}
+                      data={
+                        lineData
+                      }
                       options={{
                         responsive: true,
                         maintainAspectRatio:
@@ -505,12 +604,15 @@ export default function App() {
 
                 <div className="card">
                   <div className="cardTitle">
-                    Expense Breakdown
+                    Expense
+                    Breakdown
                   </div>
 
                   <div className="chartWrap">
                     <Doughnut
-                      data={pieData}
+                      data={
+                        pieData
+                      }
                     />
                   </div>
                 </div>
@@ -518,25 +620,29 @@ export default function App() {
             </>
           )}
 
-          {/* PAY NOW PAGE */}
+          {/* PAY NOW */}
 
-          {activePage === "paynow" && (
+          {activePage ===
+            "paynow" && (
             <div className="payNowPage">
               <div className="pageHeading">
-                <h1>Pay Maintenance</h1>
+                <h1>
+                  Pay Maintenance
+                </h1>
 
                 <p>
-                  Securely pay your
-                  monthly society
-                  maintenance using QR
-                  payment or direct bank
+                  Securely pay
+                  your monthly
+                  society
+                  maintenance
+                  using QR
+                  payment or
+                  direct bank
                   transfer.
                 </p>
               </div>
 
               <div className="payGrid">
-                {/* QR CARD */}
-
                 <div className="payCard">
                   <div className="payCardTitle">
                     Scan & Pay
@@ -545,7 +651,7 @@ export default function App() {
                   <div className="qrWrapper">
                     <img
                       src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=GreenMeadowsMaintenance"
-                      alt="QR Code"
+                      alt="QR"
                     />
                   </div>
 
@@ -555,8 +661,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* BANK DETAILS */}
-
                 <div className="payCard">
                   <div className="payCardTitle">
                     Bank Details
@@ -565,26 +669,33 @@ export default function App() {
                   <div className="bankList">
                     <div className="bankRow">
                       <span>
-                        Account Name
+                        Account
+                        Name
                       </span>
 
                       <strong>
-                        Green Meadows
+                        Green
+                        Meadows
                         Society
                       </strong>
                     </div>
 
                     <div className="bankRow">
-                      <span>Bank Name</span>
+                      <span>
+                        Bank
+                        Name
+                      </span>
 
                       <strong>
-                        HDFC Bank
+                        HDFC
+                        Bank
                       </strong>
                     </div>
 
                     <div className="bankRow">
                       <span>
-                        Account Number
+                        Account
+                        Number
                       </span>
 
                       <strong>
@@ -594,93 +705,89 @@ export default function App() {
 
                     <div className="bankRow">
                       <span>
-                        IFSC Code
+                        IFSC
+                        Code
                       </span>
 
                       <strong>
                         HDFC0001234
                       </strong>
                     </div>
-
-                    <div className="bankRow">
-                      <span>Branch</span>
-
-                      <strong>
-                        Madhapur Branch
-                      </strong>
-                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* NOTICE */}
-
               <div className="noticeCard">
-                ⚠ Kindly ensure that
-                the monthly maintenance
-                payment is completed
-                before the 10th of
-                every month to avoid
-                late charges and
-                service interruptions.
+                ⚠ Kindly
+                complete the
+                maintenance
+                payment before
+                the 10th of
+                every month to
+                avoid late
+                charges.
               </div>
             </div>
           )}
 
-          {/* RULES PAGE */}
+          {/* RULES */}
 
-          {activePage === "rules" && (
+          {activePage ===
+            "rules" && (
             <div className="pageCard">
-              <h1>Society Rules</h1>
+              <h1>
+                Society Rules
+              </h1>
 
               <p className="rulesText">
-                Please follow the
-                society guidelines to
-                maintain a safe,
-                peaceful and clean
-                environment for all
-                residents.
+                Please follow
+                society
+                guidelines to
+                maintain a
+                peaceful and
+                clean
+                environment.
               </p>
 
               <ul className="rulesList">
                 <li>
-                  Maintenance payment
-                  before 10th of every
+                  Maintenance
+                  payment
+                  before 10th
+                  of every
                   month.
                 </li>
 
                 <li>
-                  No loud noise after
-                  10 PM.
+                  No loud noise
+                  after 10 PM.
                 </li>
 
                 <li>
-                  Keep common areas
-                  clean.
+                  Keep common
+                  areas clean.
                 </li>
 
                 <li>
-                  Visitor parking only
-                  in designated areas.
-                </li>
-
-                <li>
-                  Pets should be
-                  supervised in common
-                  spaces.
+                  Visitor
+                  parking only
+                  in designated
+                  areas.
                 </li>
               </ul>
 
               <div className="pdfCard">
                 <div>
                   <div className="pdfTitle">
-                    Society Rule Book
+                    Society Rule
+                    Book
                   </div>
 
                   <div className="pdfSub">
-                    Download or view the
-                    official society
-                    handbook.
+                    View or
+                    download
+                    official
+                    PDF.
                   </div>
                 </div>
 
@@ -698,14 +805,15 @@ export default function App() {
 
           {/* CONTACT */}
 
-          {activePage === "contact" && (
+          {activePage ===
+            "contact" && (
             <div className="pageCard">
               <h1>Contact</h1>
 
               <div className="contactBox">
                 <p>
-                  📞 Maintenance Office:
-                  +91 9876543210
+                  📞 +91
+                  9876543210
                 </p>
 
                 <p>
@@ -714,8 +822,8 @@ export default function App() {
                 </p>
 
                 <p>
-                  🕒 Office Hours: 9 AM
-                  - 6 PM
+                  🕒 9 AM - 6
+                  PM
                 </p>
               </div>
             </div>
@@ -723,16 +831,98 @@ export default function App() {
 
           {/* SETTINGS */}
 
-          {activePage === "settings" && (
+          {activePage ===
+            "settings" && (
             <div className="pageCard">
               <h1>Settings</h1>
 
               <p>
-                Settings page content
-                goes here.
+                Settings page
+                content goes
+                here.
               </p>
             </div>
           )}
+
+          {/* MOBILE NAV */}
+
+          <div className="mobileNav">
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "dashboard"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "dashboard"
+                )
+              }
+            >
+              <LayoutDashboard
+                size={20}
+              />
+              <span>
+                Dashboard
+              </span>
+            </div>
+
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "paynow"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "paynow"
+                )
+              }
+            >
+              <Wallet size={20} />
+              <span>Pay</span>
+            </div>
+
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "rules"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "rules"
+                )
+              }
+            >
+              <FileText
+                size={20}
+              />
+              <span>Rules</span>
+            </div>
+
+            <div
+              className={`mobileItem ${
+                activePage ===
+                "contact"
+                  ? "mobileActive"
+                  : ""
+              }`}
+              onClick={() =>
+                setActivePage(
+                  "contact"
+                )
+              }
+            >
+              <Phone size={20} />
+              <span>
+                Contact
+              </span>
+            </div>
+          </div>
         </main>
       </div>
     </>
@@ -782,7 +972,9 @@ function SidebarItem({
     <div
       onClick={onClick}
       className={`sideItem ${
-        active ? "sideActive" : ""
+        active
+          ? "sideActive"
+          : ""
       }`}
     >
       {icon}
@@ -998,6 +1190,7 @@ body{
   border:none;
   outline:none;
   color:white;
+  width:100%;
 }
 
 select{
@@ -1039,17 +1232,10 @@ select{
   margin-top:20px;
 }
 
-.date,
-.flat,
-.category{
-  font-size:14px;
-}
-
 .status{
   padding:8px 14px;
   border-radius:999px;
   font-size:14px;
-  text-transform:capitalize;
 }
 
 .status.income{
@@ -1073,15 +1259,6 @@ select{
 .redText{
   color:#EF4444;
 }
-
-.loader{
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* PAY NOW PAGE */
 
 .payNowPage{
   margin-top:20px;
@@ -1128,13 +1305,11 @@ select{
 
 .qrWrapper img{
   width:220px;
-  height:220px;
 }
 
 .paySub{
   margin-top:20px;
   text-align:center;
-  color:#CBD5E1;
 }
 
 .bankList{
@@ -1151,10 +1326,6 @@ select{
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 
-.bankRow span{
-  color:#94A3B8;
-}
-
 .noticeCard{
   margin-top:28px;
   background:rgba(245,158,11,.12);
@@ -1164,8 +1335,6 @@ select{
   border-radius:22px;
   line-height:1.8;
 }
-
-/* RULES */
 
 .rulesText{
   margin-top:14px;
@@ -1188,17 +1357,6 @@ select{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:20px;
-}
-
-.pdfTitle{
-  font-size:18px;
-  font-weight:700;
-}
-
-.pdfSub{
-  color:#94A3B8;
-  margin-top:6px;
 }
 
 .pdfBtn{
@@ -1207,7 +1365,6 @@ select{
     #3B82F6,
     #8B5CF6
   );
-
   color:white;
   text-decoration:none;
   padding:14px 22px;
@@ -1222,6 +1379,17 @@ select{
   gap:16px;
 }
 
+.mobileNav{
+  display:none;
+}
+
+.loader{
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
 @media(max-width:1200px){
 
   .layout{
@@ -1231,37 +1399,84 @@ select{
   .sidebar{
     display:none;
   }
-
-  .chartGrid{
-    grid-template-columns:1fr;
-  }
-
-  .kpiGrid{
-    grid-template-columns:1fr;
-  }
 }
 
 @media(max-width:768px){
 
-  .main{
-    padding:20px;
+  body{
+    padding-bottom:90px;
   }
 
+  .main{
+    padding:18px;
+  }
+
+  .title{
+    font-size:30px;
+  }
+
+  .tableHeader{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:18px;
+  }
+
+  .filters{
+    width:100%;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .search{
+    width:100%;
+  }
+
+  select{
+    width:100%;
+  }
+
+  .kpiGrid,
+  .chartGrid,
   .payGrid{
     grid-template-columns:1fr;
+  }
+
+  .modernTable{
+    min-width:650px;
   }
 
   .pdfCard{
     flex-direction:column;
     align-items:flex-start;
+    gap:18px;
   }
 
-  .title{
-    font-size:32px;
+  .mobileNav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    height:74px;
+    background:#111827;
+    border-top:1px solid rgba(255,255,255,.08);
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:999;
   }
 
-  .pageHeading h1{
-    font-size:32px;
+  .mobileItem{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    color:#94A3B8;
+    font-size:11px;
+    cursor:pointer;
+  }
+
+  .mobileActive{
+    color:white;
   }
 }
 `;
