@@ -1,10 +1,5 @@
 
 
-
-App(1).jsx
-JavaScript
-Please go through the code, add payment history page. 
-
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
 
