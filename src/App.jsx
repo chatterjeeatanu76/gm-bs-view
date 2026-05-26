@@ -1121,7 +1121,7 @@ body{
 }
 
 .kpiValue{
-  margin-top:16px;
+  margin-top:0;
   font-size:32px;
   font-weight:800;
 }
