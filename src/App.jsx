@@ -218,7 +218,7 @@ export default function App() {
             <>
               <div className="topbar">
                 <div>
-                  <div className="eyebrow">FINANCE OVERVIEW</div>
+                  <div className="eyebrow">Green Meadows : Block A</div>
                   <div className="title">Balance Sheet</div>
                 </div>
               </div>
