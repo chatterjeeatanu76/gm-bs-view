@@ -350,10 +350,18 @@ export default function App() {
                 <div className="payCard">
                   <div className="payCardTitle">Scan &amp; Pay</div>
                   <div className="qrWrapper">
+{/*}
                     <img
                       src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=GreenMeadowsMaintenance"
                       alt="QR"
                     />
+*/}
+                    <img
+                      src="/image/payment-qr.jpeg"
+                      alt="QR"
+                    />
+
+
                   </div>
                   <div className="paySub">UPI ID: greenmeadows@upi</div>
                 </div>
