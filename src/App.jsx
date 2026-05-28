@@ -721,8 +721,8 @@ body{
 .pageCard{
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.06);
-  border-radius:28px;
-  padding:24px;
+  border-radius:24px;
+  padding:16px 24px;
 }
 
 .kpiTop{
@@ -732,7 +732,6 @@ body{
 }
 
 .kpiValue{
-  
   font-size:32px;
   font-weight:800;
 }
