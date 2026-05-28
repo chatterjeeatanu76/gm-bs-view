@@ -679,6 +679,7 @@ body{
 
 .profileName{
   font-weight:600;
+  font-size:15px;
 }
 
 .profileSub{
@@ -824,7 +825,7 @@ select{
 
 .modernTable thead th{
   color:#64748B;
-  font-size:12px;
+  font-size:13px;
   text-transform:uppercase;
   padding:0 18px;
   text-align:left;
@@ -841,6 +842,7 @@ select{
 
 .modernTable td{
   padding:18px;
+  font-size:13px;
 }
 
 .modernTable tr td:first-child{
@@ -867,13 +869,19 @@ select{
   height:320px;
   margin-top:20px;
 }
-
+{/*
 .category{
   background:rgba(139,92,246,.15);
   color:#A78BFA;
   padding:6px 12px;
   border-radius:999px;
   font-size:13px;
+}
+  */}
+
+.category{
+  font-size:13px;
+  font-weight:600;
 }
 
 .status{
