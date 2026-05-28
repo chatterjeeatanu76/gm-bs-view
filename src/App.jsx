@@ -357,7 +357,7 @@ export default function App() {
                     />
 */}
                     <img
-                      src="/image/payment-qr.jpeg"
+                      src="/images/GooglePay_QR.png"
                       alt="QR"
                     />
 
