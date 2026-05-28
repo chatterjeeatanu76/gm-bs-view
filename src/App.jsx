@@ -699,7 +699,8 @@ body{
 
 .eyebrow{
   color:#64748B;
-  font-size:12px;
+  font-size:13px;
+  text-transform: uppercase;
 }
 
 .title{
@@ -731,7 +732,7 @@ body{
 }
 
 .kpiValue{
-  margin-top:16px;
+  
   font-size:32px;
   font-weight:800;
 }
@@ -881,7 +882,6 @@ select{
 
 .category{
   font-size:13px;
-  font-weight:600;
 }
 
 .status{
