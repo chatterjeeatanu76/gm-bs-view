@@ -738,7 +738,8 @@ export default function App() {
             <div className={`mobileItem ${activePage === "dashboard"   ? "mobileActive" : ""}`} onClick={() => setActivePage("dashboard")}><LayoutDashboard size={20} /><span>Dashboard</span></div>
             <div className={`mobileItem ${activePage === "paynow"      ? "mobileActive" : ""}`} onClick={() => setActivePage("paynow")}><Wallet size={20} /><span>Pay</span></div>
             <div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div>
-            <div className={`mobileItem ${activePage === "history"     ? "mobileActive" : ""}`} onClick={() => setActivePage("history")}><History size={20} /><span>History</span></div>
+            <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>
+            {/*<div className={`mobileItem ${activePage === "history"     ? "mobileActive" : ""}`} onClick={() => setActivePage("history")}><History size={20} /><span>History</span></div>*/}
             <div className={`mobileItem ${activePage === "contact"     ? "mobileActive" : ""}`} onClick={() => setActivePage("contact")}><Phone size={20} /><span>Contact</span></div>
           </div>
         </main>
