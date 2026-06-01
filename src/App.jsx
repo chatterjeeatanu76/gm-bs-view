@@ -63,20 +63,17 @@ const MONTHS = [
 
 const fmt = (n) => new Intl.NumberFormat("en-IN").format(Number(n || 0));
 
-// ── Generate all 55 flat IDs ───────────────────────────────────────────────
+// ── Generate all 55 flat IDs (101–111, 201–211, ... 501–511) ──────────────
 const TOTAL_FLATS = 55;
 
 function generateFlatIds() {
-  const blocks = ["A", "B", "C", "D", "E"];
   const list = [];
-  for (const b of blocks) {
-    for (let i = 1; i <= 11; i++) {
-      list.push(`${b}${String(i).padStart(2, "0")}`);
-      if (list.length === TOTAL_FLATS) break;
+  for (let floor = 1; floor <= 5; floor++) {
+    for (let unit = 1; unit <= 11; unit++) {
+      list.push(`${floor}${String(unit).padStart(2, "0")}`);
     }
-    if (list.length === TOTAL_FLATS) break;
   }
-  return list;
+  return list; // 55 flats: 101,102...111, 201...511
 }
 
 const ALL_FLAT_IDS = generateFlatIds();
@@ -89,28 +86,25 @@ function currentMonth() {
 
 // ─── ElectricityTracker component ─────────────────────────────────────────
 function ElectricityTracker() {
-  // dbRows: records fetched from Supabase keyed by flat_no
   const [dbRows, setDbRows] = useState({});
   const [loadingPage, setLoadingPage] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth());
 
-  // Per-flat UI state
   const [expanded, setExpanded] = useState(null);
   const [formData, setFormData] = useState({ amount: "", usn: "" });
   const [saving, setSaving] = useState(false);
   const [savedFlash, setSavedFlash] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const month = currentMonth();
-
-  // ── Load this month's records from Supabase ──────────────────────────
+  // ── Load records for selected month from Supabase ────────────────────
   const loadData = useCallback(async () => {
     setLoadingPage(true);
     const { data, error } = await supabase
       .from("electricity_payments")
       .select("*")
-      .eq("month", month);
+      .eq("month", selectedMonth);
 
     if (error) {
       console.error("Load error:", error);
@@ -120,11 +114,10 @@ function ElectricityTracker() {
       setDbRows(map);
     }
     setLoadingPage(false);
-  }, [month]);
+  }, [selectedMonth]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // ── Derived flat list merging DB state onto all 55 flats ─────────────
   const flats = useMemo(() => {
     return ALL_FLAT_IDS.map((id) => {
       const row = dbRows[id];
@@ -151,7 +144,6 @@ function ElectricityTracker() {
     });
   }, [flats, search, filter]);
 
-  // ── Open form for a flat ─────────────────────────────────────────────
   function handleEdit(flatId) {
     const flat = flats.find((f) => f.id === flatId);
     setExpanded(flatId);
@@ -159,14 +151,12 @@ function ElectricityTracker() {
     setErrorMsg("");
   }
 
-  // ── Cancel form ──────────────────────────────────────────────────────
   function handleCancel() {
     setExpanded(null);
     setFormData({ amount: "", usn: "" });
     setErrorMsg("");
   }
 
-  // ── Save to Supabase (upsert) ─────────────────────────────────────────
   async function handleSave(flatId) {
     if (!formData.amount.toString().trim() || !formData.usn.trim()) return;
     setSaving(true);
@@ -177,22 +167,19 @@ function ElectricityTracker() {
       amount: parseFloat(formData.amount),
       usn: formData.usn.trim(),
       paid: true,
-      month,
+      month: selectedMonth,
       updated_at: new Date().toISOString(),
     };
 
     const flat = flats.find((f) => f.id === flatId);
-
     let error;
 
     if (flat.dbId) {
-      // Row exists — update it
       ({ error } = await supabase
         .from("electricity_payments")
         .update(payload)
         .eq("id", flat.dbId));
     } else {
-      // New row — insert it
       ({ error } = await supabase
         .from("electricity_payments")
         .insert(payload));
@@ -206,7 +193,6 @@ function ElectricityTracker() {
       return;
     }
 
-    // Refresh data from DB
     await loadData();
     setExpanded(null);
     setFormData({ amount: "", usn: "" });
@@ -234,15 +220,15 @@ function ElectricityTracker() {
         <div className="eyebrow">Green Meadows : Block A</div>
         <div className="title" style={{ display: "flex", alignItems: "center", gap: 14 }}>
           Electricity Tracker
-          <span className="elecMonthBadge">{month}</span>
+          <span className="elecMonthBadge">{selectedMonth}</span>
         </div>
       </div>
 
       {/* Stats */}
       <div className="kpiGrid" style={{ marginBottom: 16 }}>
-        <Kpi icon={<Zap size={18} />}          label="Total Flats" value={TOTAL_FLATS} blue />
-        <Kpi icon={<CheckCircle size={18} />}  label="Paid"        value={paidCount}   green />
-        <Kpi icon={<Zap size={18} />}          label="Pending"     value={pendingCount} red />
+        <Kpi icon={<Zap size={18} />}         label="Total Flats" value={TOTAL_FLATS} blue />
+        <Kpi icon={<CheckCircle size={18} />} label="Paid"        value={paidCount}   green />
+        <Kpi icon={<Zap size={18} />}         label="Pending"     value={pendingCount} red />
       </div>
 
       {/* Progress bar */}
@@ -253,28 +239,46 @@ function ElectricityTracker() {
 
       {/* Controls */}
       <div className="elecControls">
-        <div className="search" style={{ flex: 1 }}>
-          <Search size={15} />
-          <input
-            placeholder="Search flat number..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        {/* Row 1: search + month select + filter + refresh */}
+        <div className="elecControlsRow">
+          <div className="search" style={{ flex: 1 }}>
+            <Search size={15} />
+            <input
+              placeholder="Search flat number..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Month selector */}
+          <select
+            className="elecMonthSelect"
+            value={selectedMonth}
+            onChange={(e) => { setSelectedMonth(e.target.value); setExpanded(null); }}
+          >
+            {MONTHS.map(([v, l]) => {
+              const yr = new Date().getFullYear();
+              const key = `${yr}-${v}`;
+              return <option key={key} value={key}>{l} {yr}</option>;
+            })}
+          </select>
+
+          <div className="elecFilterGroup">
+            {["all", "paid", "pending"].map((f) => (
+              <button
+                key={f}
+                className={`elecFBtn ${filter === f ? "elecFActive" : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <button className="elecReset" onClick={loadData}>
+            <RefreshCw size={13} /> Refresh
+          </button>
         </div>
-        <div className="elecFilterGroup">
-          {["all", "paid", "pending"].map((f) => (
-            <button
-              key={f}
-              className={`elecFBtn ${filter === f ? "elecFActive" : ""}`}
-              onClick={() => setFilter(f)}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
-        <button className="elecReset" onClick={loadData}>
-          <RefreshCw size={13} /> Refresh
-        </button>
       </div>
 
       {/* Table */}
@@ -288,19 +292,21 @@ function ElectricityTracker() {
                 <tr>
                   <th>Flat No.</th>
                   <th>Status</th>
-                  <th style={{ textAlign: "center" }}>Action</th>
+                  <th>Amount</th>
+                  <th>USN No.</th>
+                  <th style={{ textAlign: "right" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {visible.map((f) => (
                   <>
-                    {/* Main row */}
+                    {/* Main row — 5 columns */}
                     <tr key={f.id}>
                       <td style={{ fontWeight: 700, color: "white", fontSize: 14 }}>
                         {f.id}
                       </td>
                       <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span className={`status ${f.paid ? "income" : "expense"}`}>
                             {f.paid ? "Paid" : "Pending"}
                           </span>
@@ -309,7 +315,13 @@ function ElectricityTracker() {
                           )}
                         </div>
                       </td>
-                      <td style={{ textAlign: "center" }}>
+                      <td style={{ fontWeight: 600, color: f.paid ? "#22C55E" : "#475569" }}>
+                        {f.paid ? `₹ ${fmt(f.amount)}` : "—"}
+                      </td>
+                      <td style={{ color: f.paid ? "#CBD5E1" : "#475569" }}>
+                        {f.paid ? f.usn : "—"}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
                         {f.paid ? (
                           <button
                             className="elecEditBtn"
@@ -331,10 +343,10 @@ function ElectricityTracker() {
                     {/* Inline expand form */}
                     {expanded === f.id && (
                       <tr key={`${f.id}-form`} className="elecFormRow">
-                        <td colSpan={3}>
+                        <td colSpan={5}>
                           <div className="elecFormBox">
                             <div className="elecFormTitle">
-                              {f.paid ? "Edit" : "Add"} payment details — {f.id}
+                              {f.paid ? "Edit" : "Add"} payment details — Flat {f.id}
                             </div>
                             <div className="elecFormFields">
                               <div className="elecField">
@@ -386,19 +398,6 @@ function ElectricityTracker() {
                                 )}
                               </button>
                             </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-
-                    {/* Paid detail row */}
-                    {f.paid && expanded !== f.id && (
-                      <tr key={`${f.id}-detail`} className="elecDetailsRow">
-                        <td colSpan={3}>
-                          <div className="elecDetails">
-                            <span className="elecDetailAmt">₹{fmt(f.amount)}</span>
-                            <span className="elecDetailDot">·</span>
-                            <span className="elecDetailUsn">USN: {f.usn}</span>
                           </div>
                         </td>
                       </tr>
@@ -845,7 +844,9 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .elecProgressWrap{position:relative;height:6px;background:rgba(255,255,255,.07);border-radius:999px;margin-bottom:6px;overflow:hidden;}
 .elecProgressFill{height:100%;background:#22C55E;border-radius:999px;transition:width .4s ease;}
 .elecProgressLabel{display:block;text-align:right;font-size:11px;color:#22C55E;font-weight:600;margin-bottom:20px;}
-.elecControls{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.elecControls{margin-bottom:20px;}
+.elecControlsRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.elecMonthSelect{background:#111827;border:none;color:white;border-radius:14px;padding:12px 14px;font-size:13px;cursor:pointer;white-space:nowrap;}
 .elecFilterGroup{display:flex;background:#111827;border-radius:14px;padding:4px;gap:2px;}
 .elecFBtn{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#64748B;transition:.15s;}
 .elecFActive{background:rgba(59,130,246,.25);color:#93C5FD;}
@@ -876,13 +877,6 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .elecSaveActive{background:#1D4ED8;color:white;}
 .elecSaveActive:hover{background:#2563EB;}
 .elecSaveDisabled{background:rgba(255,255,255,.06);color:#475569;cursor:not-allowed;}
-
-/* Detail row */
-.elecDetailsRow td{padding:0 18px 10px !important;background:transparent !important;border-radius:0 !important;}
-.elecDetails{display:flex;align-items:center;gap:8px;padding:6px 4px;}
-.elecDetailAmt{font-size:13px;font-weight:700;color:#22C55E;}
-.elecDetailDot{color:#475569;}
-.elecDetailUsn{font-size:13px;color:#94A3B8;}
 
 /* PAY NOW */
 .payNowPage{margin-top:20px;}
@@ -928,8 +922,9 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
   .viewToggle{display:flex;background:#111827;border-radius:12px;padding:4px;gap:4px;}
   .hideMobile{display:none;}
   .showMobileCards{display:block;}
-  .elecControls{flex-direction:column;}
-  .elecControls .search{width:100%;}
+  .elecControlsRow{flex-direction:column;gap:10px;}
+  .elecControlsRow .search{width:100%;}
+  .elecMonthSelect{width:100%;}
   .elecFilterGroup{width:100%;justify-content:space-between;}
   .elecReset{width:100%;justify-content:center;}
   .elecFormFields{grid-template-columns:1fr;}
