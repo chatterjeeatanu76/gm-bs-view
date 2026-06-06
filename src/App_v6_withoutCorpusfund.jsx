@@ -19,9 +19,6 @@ import {
   Save,
   Pencil,
   Loader2,
-  PiggyBank,
-  ArrowUpCircle,
-  ArrowDownCircle,
 } from "lucide-react";
 
 import {
@@ -416,171 +413,6 @@ function ElectricityTracker() {
   );
 }
 
-// ─── CorpusFund component ──────────────────────────────────────────────────────
-function CorpusFund() {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [month, setMonth] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
-
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("corpus_transactions")
-      .select("*")
-      .order("date", { ascending: false });
-    if (error) console.error("Corpus load error:", error);
-    else setTransactions(data || []);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { loadData(); }, [loadData]);
-
-  const filtered = useMemo(() => {
-    return transactions.filter((row) => {
-      const text = Object.values(row).join(" ").toLowerCase();
-      const matchSearch = !search || text.includes(search.toLowerCase());
-      const matchMonth  = !month  || row.date?.includes(`-${month}-`);
-      const matchType   = typeFilter === "all" || row.type === typeFilter;
-      return matchSearch && matchMonth && matchType;
-    });
-  }, [transactions, search, month, typeFilter]);
-
-  const income      = transactions.filter((x) => x.type === "income");
-  const expenses    = transactions.filter((x) => x.type === "expense");
-  const totalIncome  = income.reduce((a, b)   => a + Number(b.amount || 0), 0);
-  const totalExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
-  const balance      = totalIncome - totalExpense;
-
-  if (loading) {
-    return (
-      <div className="elecLoader">
-        <Loader2 size={28} className="spin" />
-        <span>Loading corpus fund data...</span>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {/* Header */}
-      <div className="topbar">
-        <div className="eyebrow">Green Meadows : Block A</div>
-        <div className="title">Corpus Fund</div>
-      </div>
-
-      {/* KPI cards */}
-      <div className="kpiGrid" style={{ marginBottom: 28 }}>
-        <Kpi icon={<ArrowUpCircle size={18} />}  label="Total Income"  value={`₹${fmt(totalIncome)}`}  green />
-        <Kpi icon={<ArrowDownCircle size={18} />} label="Total Expense" value={`₹${fmt(totalExpense)}`} red />
-        <Kpi icon={<PiggyBank size={18} />}       label="Corpus Balance" value={`₹${fmt(balance)}`}     blue />
-      </div>
-
-      {/* Table card */}
-      <div className="tableCard" style={{ marginTop: 0 }}>
-        <div className="tableHeader">
-          <div>
-            <div className="tableTitle">Corpus Transactions</div>
-            <div className="tableSub">Complete income &amp; expenditure record</div>
-          </div>
-          <div className="tableHeaderRight">
-            {/* Type filter pills */}
-            <div className="elecFilterGroup">
-              {["all", "income", "expense"].map((f) => (
-                <button
-                  key={f}
-                  className={`elecFBtn ${typeFilter === f ? "elecFActive" : ""}`}
-                  onClick={() => setTypeFilter(f)}
-                >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
-              ))}
-            </div>
-            <div className="filters">
-              <div className="search">
-                <Search size={15} />
-                <input
-                  placeholder="Search transactions..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <select value={month} onChange={(e) => setMonth(e.target.value)}>
-                <option value="">All Months</option>
-                {MONTHS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-              <button className="elecReset" onClick={loadData}>
-                <RefreshCw size={13} /> Refresh
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="elecEmpty">No transactions found.</div>
-        ) : (
-          <div className="tableWrap">
-            <table className="modernTable">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Flat No.</th>
-                  <th>Type</th>
-                  <th style={{ textAlign: "right" }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((r) => (
-                  <tr key={r.id}>
-                    <td>
-                      {new Date(r.date).toLocaleDateString("en-GB", {
-                        day: "2-digit", month: "short", year: "numeric",
-                      }).replace(",", "")}
-                    </td>
-                    <td style={{ fontWeight: 600, color: "white" }}>
-                      {r.title || "—"}
-                    </td>
-                    <td>
-                      <span className="category">{r.category || "—"}</span>
-                    </td>
-                    <td style={{ color: "#94A3B8" }}>
-                      {r.flat_no || "—"}
-                    </td>
-                    <td>
-                      <span className={`status ${r.type}`}>{r.type}</span>
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <span className={`amount ${r.type === "income" ? "greenText" : "redText"}`}>
-                        ₹{fmt(r.amount)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Running balance footer */}
-        <div className="corpusFooter">
-          <span>
-            {filtered.length} transaction{filtered.length !== 1 ? "s" : ""} shown
-          </span>
-          <span>
-            Net:{" "}
-            <strong className={balance >= 0 ? "greenText" : "redText"}>
-              ₹{fmt(balance)}
-            </strong>
-          </span>
-        </div>
-      </div>
-    </>
-  );
-}
-
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [transactions, setTransactions] = useState([]);
@@ -675,7 +507,6 @@ export default function App() {
               <SidebarItem icon={<Wallet size={18} />}          label="Pay Now"         active={activePage === "paynow"}      onClick={() => setActivePage("paynow")} />
               <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} />
               <SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} />
-              <SidebarItem icon={<PiggyBank size={18} />}        label="Corpus Fund"     active={activePage === "corpus"}      onClick={() => setActivePage("corpus")} />
               <SidebarItem icon={<FileText size={18} />}        label="Society Rules"   active={activePage === "rules"}       onClick={() => setActivePage("rules")} />
               <SidebarItem icon={<Phone size={18} />}           label="Contact"         active={activePage === "contact"}     onClick={() => setActivePage("contact")} />
               <SidebarItem icon={<Settings size={18} />}        label="Settings"        active={activePage === "settings"}    onClick={() => setActivePage("settings")} />
@@ -861,9 +692,6 @@ export default function App() {
           {/* ELECTRICITY TRACKER */}
           {activePage === "electricity" && <ElectricityTracker />}
 
-          {/* CORPUS FUND */}
-          {activePage === "corpus" && <CorpusFund />}
-
           {/* SOCIETY RULES */}
           {activePage === "rules" && (
             <div className="pageCard">
@@ -910,7 +738,6 @@ export default function App() {
             <div className={`mobileItem ${activePage === "dashboard"   ? "mobileActive" : ""}`} onClick={() => setActivePage("dashboard")}><LayoutDashboard size={20} /><span>Dashboard</span></div>
             <div className={`mobileItem ${activePage === "paynow"      ? "mobileActive" : ""}`} onClick={() => setActivePage("paynow")}><Wallet size={20} /><span>Pay</span></div>
             <div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div>
-            <div className={`mobileItem ${activePage === "corpus"      ? "mobileActive" : ""}`} onClick={() => setActivePage("corpus")}><PiggyBank size={20} /><span>Corpus</span></div>
             <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>
             {/*<div className={`mobileItem ${activePage === "history"     ? "mobileActive" : ""}`} onClick={() => setActivePage("history")}><History size={20} /><span>History</span></div>*/}
             <div className={`mobileItem ${activePage === "contact"     ? "mobileActive" : ""}`} onClick={() => setActivePage("contact")}><Phone size={20} /><span>Contact</span></div>
@@ -1080,7 +907,6 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .contactBox{margin-top:20px;display:flex;flex-direction:column;gap:16px;color:#CBD5E1;line-height:1.8;}
 .loader{height:100vh;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .mobileNav{display:none;}
-.corpusFooter{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);color:#64748B;font-size:13px;}
 
 @media(max-width:1200px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
 @media(max-width:768px){
