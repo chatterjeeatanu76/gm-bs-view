@@ -22,6 +22,7 @@ import {
   PiggyBank,
   ArrowUpCircle,
   ArrowDownCircle,
+  ClipboardList,
 } from "lucide-react";
 
 import {
@@ -416,6 +417,197 @@ function ElectricityTracker() {
   );
 }
 
+// ─── MaintenanceDues component ────────────────────────────────────────────────
+function MaintenanceDues() {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth());
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    const [yr, mo] = selectedMonth.split("-");
+    const from = `${yr}-${mo}-01`;
+    const lastDay = new Date(Number(yr), Number(mo), 0).getDate();
+    const to = `${yr}-${mo}-${String(lastDay).padStart(2, "0")}`;
+
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("type", "income")
+      .eq("category", "Maintenance")
+      .gte("date", from)
+      .lte("date", to);
+
+    if (error) console.error("Dues load error:", error);
+    else setTransactions(data || []);
+    setLoading(false);
+  }, [selectedMonth]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // Build per-flat status from ALL_FLAT_IDS
+  const flats = useMemo(() => {
+    return ALL_FLAT_IDS.map((id) => {
+      const row = transactions.find((t) => t.flat_no === id);
+      return {
+        id,
+        paid: !!row,
+        amount: row ? row.amount : null,
+        date: row ? row.date : null,
+      };
+    });
+  }, [transactions]);
+
+  const paidCount    = flats.filter((f) => f.paid).length;
+  const pendingCount = TOTAL_FLATS - paidCount;
+  const totalCollected = flats.filter((f) => f.paid).reduce((a, f) => a + Number(f.amount || 0), 0);
+  const pct = Math.round((paidCount / TOTAL_FLATS) * 100);
+
+  const visible = useMemo(() => {
+    return flats.filter((f) => {
+      const matchSearch = !search || f.id.toLowerCase().includes(search.toLowerCase());
+      const matchFilter =
+        filter === "all" ||
+        (filter === "paid" && f.paid) ||
+        (filter === "pending" && !f.paid);
+      return matchSearch && matchFilter;
+    });
+  }, [flats, search, filter]);
+
+  if (loading) {
+    return (
+      <div className="elecLoader">
+        <Loader2 size={28} className="spin" />
+        <span>Loading maintenance dues...</span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Header */}
+      <div className="topbar">
+        <div className="eyebrow">Green Meadows : Block A</div>
+        <div className="title" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          Maintenance Dues
+          <span className="elecMonthBadge">{selectedMonth}</span>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div className="kpiGrid" style={{ marginBottom: 16 }}>
+        <Kpi icon={<ClipboardList size={18} />} label="Total Flats"    value={TOTAL_FLATS}            blue />
+        <Kpi icon={<CheckCircle size={18} />}   label="Paid"           value={paidCount}              green />
+        <Kpi icon={<Wallet size={18} />}        label="Pending"        value={pendingCount}           red />
+      </div>
+
+      {/* Collected amount + progress */}
+      <div className="tableCard" style={{ marginBottom: 16, padding: "14px 24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span style={{ color: "#94A3B8", fontSize: 13 }}>Amount Collected this month</span>
+          <span style={{ fontWeight: 800, fontSize: 18, color: "#22C55E" }}>₹{fmt(totalCollected)}</span>
+        </div>
+        <div className="elecProgressWrap">
+          <div className="elecProgressFill" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="elecProgressLabel">{pct}% collected ({paidCount} of {TOTAL_FLATS} flats)</span>
+      </div>
+
+      {/* Controls */}
+      <div className="elecControls">
+        <div className="elecControlsRow">
+          <div className="search" style={{ flex: 1 }}>
+            <Search size={15} />
+            <input
+              placeholder="Search flat number..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            className="elecMonthSelect"
+            value={selectedMonth}
+            onChange={(e) => { setSelectedMonth(e.target.value); }}
+          >
+            {MONTHS.map(([v, l]) => {
+              const yr = new Date().getFullYear();
+              const key = `${yr}-${v}`;
+              return <option key={key} value={key}>{l} {yr}</option>;
+            })}
+          </select>
+          <div className="elecFilterGroup">
+            {["all", "paid", "pending"].map((f) => (
+              <button
+                key={f}
+                className={`elecFBtn ${filter === f ? "elecFActive" : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+          <button className="elecReset" onClick={loadData}>
+            <RefreshCw size={13} /> Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="tableCard" style={{ marginTop: 0 }}>
+        {visible.length === 0 ? (
+          <div className="elecEmpty">No flats match your search.</div>
+        ) : (
+          <div className="tableWrap">
+            <table className="modernTable">
+              <thead>
+                <tr>
+                  <th>Flat No.</th>
+                  <th>Status</th>
+                  <th>Date Paid</th>
+                  <th style={{ textAlign: "right" }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((f) => (
+                  <tr key={f.id}>
+                    <td style={{ fontWeight: 700, color: "white", fontSize: 14 }}>{f.id}</td>
+                    <td>
+                      <span className={`status ${f.paid ? "income" : "expense"}`}>
+                        {f.paid ? "Paid" : "Pending"}
+                      </span>
+                    </td>
+                    <td style={{ color: f.paid ? "#CBD5E1" : "#475569" }}>
+                      {f.paid
+                        ? new Date(f.date).toLocaleDateString("en-GB", {
+                            day: "2-digit", month: "short", year: "numeric",
+                          }).replace(",", "")
+                        : "—"}
+                    </td>
+                    <td style={{ textAlign: "right", fontWeight: 700, color: f.paid ? "#22C55E" : "#475569" }}>
+                      {f.paid ? `₹${fmt(f.amount)}` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="corpusFooter">
+          <span>{visible.length} flat{visible.length !== 1 ? "s" : ""} shown</span>
+          <span>
+            Pending:{" "}
+            <strong className="redText">{pendingCount} flat{pendingCount !== 1 ? "s" : ""}</strong>
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── CorpusFund component ──────────────────────────────────────────────────────
 function CorpusFund() {
   const [transactions, setTransactions] = useState([]);
@@ -675,6 +867,7 @@ export default function App() {
               <SidebarItem icon={<Wallet size={18} />}          label="Pay Now"         active={activePage === "paynow"}      onClick={() => setActivePage("paynow")} />
               <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} />
               <SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} />
+              <SidebarItem icon={<ClipboardList size={18} />}    label="Maintenance Dues" active={activePage === "dues"}        onClick={() => setActivePage("dues")} />
               <SidebarItem icon={<PiggyBank size={18} />}        label="Corpus Fund"     active={activePage === "corpus"}      onClick={() => setActivePage("corpus")} />
               <SidebarItem icon={<FileText size={18} />}        label="Society Rules"   active={activePage === "rules"}       onClick={() => setActivePage("rules")} />
               <SidebarItem icon={<Phone size={18} />}           label="Contact"         active={activePage === "contact"}     onClick={() => setActivePage("contact")} />
@@ -861,6 +1054,9 @@ export default function App() {
           {/* ELECTRICITY TRACKER */}
           {activePage === "electricity" && <ElectricityTracker />}
 
+          {/* MAINTENANCE DUES */}
+          {activePage === "dues" && <MaintenanceDues />}
+
           {/* CORPUS FUND */}
           {activePage === "corpus" && <CorpusFund />}
 
@@ -910,6 +1106,7 @@ export default function App() {
             <div className={`mobileItem ${activePage === "dashboard"   ? "mobileActive" : ""}`} onClick={() => setActivePage("dashboard")}><LayoutDashboard size={20} /><span>Dashboard</span></div>
             <div className={`mobileItem ${activePage === "paynow"      ? "mobileActive" : ""}`} onClick={() => setActivePage("paynow")}><Wallet size={20} /><span>Pay</span></div>
             <div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div>
+            <div className={`mobileItem ${activePage === "dues"        ? "mobileActive" : ""}`} onClick={() => setActivePage("dues")}><ClipboardList size={20} /><span>Dues</span></div>
             <div className={`mobileItem ${activePage === "corpus"      ? "mobileActive" : ""}`} onClick={() => setActivePage("corpus")}><PiggyBank size={20} /><span>Corpus</span></div>
             <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>
             {/*<div className={`mobileItem ${activePage === "history"     ? "mobileActive" : ""}`} onClick={() => setActivePage("history")}><History size={20} /><span>History</span></div>*/}
