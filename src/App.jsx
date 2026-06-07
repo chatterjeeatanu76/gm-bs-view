@@ -451,10 +451,13 @@ function MaintenanceDues() {
   // Detect if flat_no is populated in the data
   const hasFlatNos = transactions.some((t) => t.flat_no);
 
+  // Normalize flat_no: strip "Flat-", "flat ", spaces etc. → plain number string e.g. "309"
+  const normFlat = (val) => val ? String(val).replace(/^flat[-\s]*/i, "").trim() : "";
+
   // Per-flat status map (when flat_no is used)
   const flats = useMemo(() => {
     return ALL_FLAT_IDS.map((id) => {
-      const row = transactions.find((t) => t.flat_no && t.flat_no === id);
+      const row = transactions.find((t) => t.flat_no && normFlat(t.flat_no) === String(id));
       return {
         id,
         paid: !!row,
