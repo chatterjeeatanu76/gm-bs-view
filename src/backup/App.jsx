@@ -436,10 +436,9 @@ function MaintenanceDues() {
       .from("transactions")
       .select("*")
       .eq("type", "income")
-      .ilike("category", "%Maintenance%")
+      .eq("category", "Maintenance")
       .gte("date", from)
-      .lte("date", to)
-      .order("date", { ascending: false });
+      .lte("date", to);
 
     if (error) console.error("Dues load error:", error);
     else setTransactions(data || []);
@@ -448,47 +447,34 @@ function MaintenanceDues() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Detect if flat_no is populated in the data
-  const hasFlatNos = transactions.some((t) => t.flat_no);
-
-  // Per-flat status map (when flat_no is used)
+  // Build per-flat status from ALL_FLAT_IDS
   const flats = useMemo(() => {
     return ALL_FLAT_IDS.map((id) => {
-      const row = transactions.find((t) => t.flat_no && t.flat_no === id);
+      const row = transactions.find((t) => t.flat_no === id);
       return {
         id,
         paid: !!row,
         amount: row ? row.amount : null,
         date: row ? row.date : null,
-        title: row ? row.title : null,
       };
     });
   }, [transactions]);
 
-  const paidCount      = hasFlatNos ? flats.filter((f) => f.paid).length : transactions.length;
-  const pendingCount   = TOTAL_FLATS - paidCount;
-  const totalCollected = transactions.reduce((a, t) => a + Number(t.amount || 0), 0);
-  const pct            = Math.round((paidCount / TOTAL_FLATS) * 100);
+  const paidCount    = flats.filter((f) => f.paid).length;
+  const pendingCount = TOTAL_FLATS - paidCount;
+  const totalCollected = flats.filter((f) => f.paid).reduce((a, f) => a + Number(f.amount || 0), 0);
+  const pct = Math.round((paidCount / TOTAL_FLATS) * 100);
 
   const visible = useMemo(() => {
-    if (hasFlatNos) {
-      return flats.filter((f) => {
-        const matchSearch = !search || f.id.toLowerCase().includes(search.toLowerCase());
-        const matchFilter =
-          filter === "all" ||
-          (filter === "paid" && f.paid) ||
-          (filter === "pending" && !f.paid);
-        return matchSearch && matchFilter;
-      });
-    }
-    // fallback: flat_no not used — show raw transactions (all = paid)
-    return transactions.filter((t) => {
-      const text = `${t.flat_no || ""} ${t.title || ""}`.toLowerCase();
-      const matchSearch = !search || text.includes(search.toLowerCase());
-      const matchFilter = filter === "all" || filter === "paid";
+    return flats.filter((f) => {
+      const matchSearch = !search || f.id.toLowerCase().includes(search.toLowerCase());
+      const matchFilter =
+        filter === "all" ||
+        (filter === "paid" && f.paid) ||
+        (filter === "pending" && !f.paid);
       return matchSearch && matchFilter;
     });
-  }, [flats, transactions, hasFlatNos, search, filter]);
+  }, [flats, search, filter]);
 
   if (loading) {
     return (
@@ -571,56 +557,39 @@ function MaintenanceDues() {
       {/* Table */}
       <div className="tableCard" style={{ marginTop: 0 }}>
         {visible.length === 0 ? (
-          <div className="elecEmpty">No transactions found for this month.</div>
+          <div className="elecEmpty">No flats match your search.</div>
         ) : (
           <div className="tableWrap">
             <table className="modernTable">
               <thead>
                 <tr>
-                  <th>{hasFlatNos ? "Flat No." : "#"}</th>
-                  <th>{hasFlatNos ? "Status" : "Title"}</th>
+                  <th>Flat No.</th>
+                  <th>Status</th>
                   <th>Date Paid</th>
                   <th style={{ textAlign: "right" }}>Amount</th>
                 </tr>
               </thead>
               <tbody>
-                {hasFlatNos
-                  ? visible.map((f) => (
-                      <tr key={f.id}>
-                        <td style={{ fontWeight: 700, color: "white", fontSize: 14 }}>{f.id}</td>
-                        <td>
-                          <span className={`status ${f.paid ? "income" : "expense"}`}>
-                            {f.paid ? "Paid" : "Pending"}
-                          </span>
-                        </td>
-                        <td style={{ color: f.paid ? "#CBD5E1" : "#475569" }}>
-                          {f.paid
-                            ? new Date(f.date).toLocaleDateString("en-GB", {
-                                day: "2-digit", month: "short", year: "numeric",
-                              }).replace(",", "")
-                            : "—"}
-                        </td>
-                        <td style={{ textAlign: "right", fontWeight: 700, color: f.paid ? "#22C55E" : "#475569" }}>
-                          {f.paid ? `₹${fmt(f.amount)}` : "—"}
-                        </td>
-                      </tr>
-                    ))
-                  : visible.map((t, i) => (
-                      <tr key={t.id}>
-                        <td style={{ color: "#64748B" }}>{i + 1}</td>
-                        <td style={{ fontWeight: 600, color: "white" }}>{t.title || "Maintenance"}</td>
-                        <td style={{ color: "#CBD5E1" }}>
-                          {t.date
-                            ? new Date(t.date).toLocaleDateString("en-GB", {
-                                day: "2-digit", month: "short", year: "numeric",
-                              }).replace(",", "")
-                            : "—"}
-                        </td>
-                        <td style={{ textAlign: "right", fontWeight: 700, color: "#22C55E" }}>
-                          ₹{fmt(t.amount)}
-                        </td>
-                      </tr>
-                    ))}
+                {visible.map((f) => (
+                  <tr key={f.id}>
+                    <td style={{ fontWeight: 700, color: "white", fontSize: 14 }}>{f.id}</td>
+                    <td>
+                      <span className={`status ${f.paid ? "income" : "expense"}`}>
+                        {f.paid ? "Paid" : "Pending"}
+                      </span>
+                    </td>
+                    <td style={{ color: f.paid ? "#CBD5E1" : "#475569" }}>
+                      {f.paid
+                        ? new Date(f.date).toLocaleDateString("en-GB", {
+                            day: "2-digit", month: "short", year: "numeric",
+                          }).replace(",", "")
+                        : "—"}
+                    </td>
+                    <td style={{ textAlign: "right", fontWeight: 700, color: f.paid ? "#22C55E" : "#475569" }}>
+                      {f.paid ? `₹${fmt(f.amount)}` : "—"}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
