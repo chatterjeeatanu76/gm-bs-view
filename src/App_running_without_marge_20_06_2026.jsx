@@ -809,7 +809,6 @@ export default function App() {
   const [activePage, setActivePage] = useState("dashboard");
   const [historySearch, setHistorySearch] = useState("");
   const [viewMode, setViewMode] = useState("table");
-  const [mergedByFlat, setMergedByFlat] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -832,37 +831,6 @@ export default function App() {
       );
     });
   }, [transactions, search, month]);
-
-  // Group rows that share the same flat_no + date + type into one merged row.
-  // Categories are joined with " + " and amounts are summed.
-  const mergedFiltered = useMemo(() => {
-    const groups = new Map();
-    filtered.forEach((row) => {
-      const key = `${row.flat_no || "—"}|${row.date}|${row.type}`;
-      if (!groups.has(key)) {
-        groups.set(key, {
-          id: row.id,
-          flat_no: row.flat_no,
-          date: row.date,
-          type: row.type,
-          categories: [row.category],
-          amount: Number(row.amount || 0),
-        });
-      } else {
-        const g = groups.get(key);
-        if (row.category && !g.categories.includes(row.category)) {
-          g.categories.push(row.category);
-        }
-        g.amount += Number(row.amount || 0);
-      }
-    });
-    return Array.from(groups.values()).map((g) => ({
-      ...g,
-      category: g.categories.join(" + "),
-    }));
-  }, [filtered]);
-
-  const displayRows = mergedByFlat ? mergedFiltered : filtered;
 
   const income = transactions.filter((x) => x.type === "income");
   const expenses = transactions.filter((x) => x.type === "expense");
@@ -973,13 +941,6 @@ export default function App() {
                         <LayoutGrid size={14} /> Cards
                       </button>
                     </div>
-                    <button
-                      className={`toggleBtn ${mergedByFlat ? "toggleActive" : ""}`}
-                      onClick={() => setMergedByFlat((v) => !v)}
-                      title="Combine same flat + date entries into one row"
-                    >
-                      {mergedByFlat ? <CheckCircle size={14} /> : <ClipboardList size={14} />} Merged by flat
-                    </button>
                     <div className="filters">
                       <div className="search">
                         <Search size={15} />
@@ -999,7 +960,7 @@ export default function App() {
                       <tr><th>Date</th><th>Flat</th><th>Category</th><th>Status</th><th align="right">Amount</th></tr>
                     </thead>
                     <tbody>
-                      {displayRows.map((r) => (
+                      {filtered.map((r) => (
                         <tr key={r.id}>
                           <td>{new Date(r.date).toLocaleDateString("en-GB",{day:"2-digit",month:"short"}).replace(",","")}</td>
                           <td>{r.flat_no || "-"}</td>
@@ -1013,7 +974,7 @@ export default function App() {
                 </div>
 
                 <div className={`txCardList ${viewMode === "card" ? "showMobileCards" : ""}`}>
-                  {displayRows.map((r) => (
+                  {filtered.map((r) => (
                     <div key={r.id} className="txCard">
                       <div className="txCardTop">
                         <div>
