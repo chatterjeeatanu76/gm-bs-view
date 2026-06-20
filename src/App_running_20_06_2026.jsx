@@ -326,7 +326,14 @@ function ElectricityTracker() {
                         {f.paid ? f.usn : "—"}
                       </td>
                       <td style={{ textAlign: "right" }}>
-                        {!f.paid && (
+                        {f.paid ? (
+                          <button
+                            className="elecEditBtn"
+                            onClick={() => handleEdit(f.id)}
+                          >
+                            <Pencil size={12} /> Edit
+                          </button>
+                        ) : (
                           <button
                             className="elecMarkPaidBtn"
                             onClick={() => handleEdit(f.id)}
@@ -892,7 +899,7 @@ export default function App() {
             <div className="menu">
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard"      active={activePage === "dashboard"}   onClick={() => setActivePage("dashboard")} />
               <SidebarItem icon={<Wallet size={18} />}          label="Pay Now"         active={activePage === "paynow"}      onClick={() => setActivePage("paynow")} />
-              <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} />
+{/*           <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} />   */}
               <SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} />
               <SidebarItem icon={<ClipboardList size={18} />}    label="Maintenance Dues" active={activePage === "dues"}        onClick={() => setActivePage("dues")} />
               <SidebarItem icon={<PiggyBank size={18} />}        label="Corpus Fund"     active={activePage === "corpus"}      onClick={() => setActivePage("corpus")} />
@@ -1135,8 +1142,8 @@ export default function App() {
             <div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div>
             <div className={`mobileItem ${activePage === "dues"        ? "mobileActive" : ""}`} onClick={() => setActivePage("dues")}><ClipboardList size={20} /><span>Dues</span></div>
             <div className={`mobileItem ${activePage === "corpus"      ? "mobileActive" : ""}`} onClick={() => setActivePage("corpus")}><PiggyBank size={20} /><span>Corpus</span></div>
-            <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>
-            {/*<div className={`mobileItem ${activePage === "history"     ? "mobileActive" : ""}`} onClick={() => setActivePage("history")}><History size={20} /><span>History</span></div>*/}
+{/*         <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>   */}
+{/*         <div className={`mobileItem ${activePage === "history"     ? "mobileActive" : ""}`} onClick={() => setActivePage("history")}><History size={20} /><span>History</span></div>*/}
             <div className={`mobileItem ${activePage === "contact"     ? "mobileActive" : ""}`} onClick={() => setActivePage("contact")}><Phone size={20} /><span>Contact</span></div>
           </div>
         </main>
