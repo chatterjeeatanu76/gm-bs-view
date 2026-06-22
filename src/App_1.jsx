@@ -31,21 +31,19 @@ import {
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   ArcElement,
   Tooltip,
   Legend,
   Filler,
 } from "chart.js";
 
-import { Line, Doughnut, Bar } from "react-chartjs-2";
+import { Line, Doughnut } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   ArcElement,
   Tooltip,
   Legend,
@@ -872,7 +870,7 @@ export default function App() {
   const totalExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
   const balance = totalIncome - totalExpense;
 
-  const barData = {
+  const lineData = {
     labels: MONTHS.slice(-6).map(([, l]) => l.slice(0, 3)),
     datasets: [
       {
@@ -880,33 +878,22 @@ export default function App() {
         data: MONTHS.slice(-6).map(([m]) =>
           income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-        backgroundColor: "#22C55E",
-        borderRadius: 8,
-        borderSkipped: false,
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34,197,94,.08)",
+        fill: true,
+        tension: 0.4,
       },
       {
-        label: "Expenditure",
+        label: "Expense",
         data: MONTHS.slice(-6).map(([m]) =>
           expenses.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-        backgroundColor: "#EF4444",
-        borderRadius: 8,
-        borderSkipped: false,
+        borderColor: "#ef4444",
+        backgroundColor: "rgba(239,68,68,.08)",
+        fill: true,
+        tension: 0.4,
       },
     ],
-  };
-
-  const incomeMap = income.reduce((acc, item) => {
-    if (item.category) acc[item.category] = (acc[item.category] || 0) + Number(item.amount);
-    return acc;
-  }, {});
-
-  const incomePieData = {
-    labels: Object.keys(incomeMap),
-    datasets: [{
-      data: Object.values(incomeMap),
-      backgroundColor: ["#14B8A6","#3B82F6","#F59E0B","#22C55E","#8B5CF6","#F97316","#EF4444"],
-    }],
   };
 
   const expenseMap = expenses.reduce((acc, item) => {
@@ -1053,29 +1040,11 @@ export default function App() {
               <div className="chartGrid">
                 <div className="card">
                   <div className="cardTitle">Financial Trend</div>
-                  <div className="chartWrap">
-                    <Bar data={barData} options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: { legend: { labels: { color: "#94A3B8" } } },
-                      scales: {
-                        x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                        y: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                      },
-                    }} />
-                  </div>
-                </div>
-                <div className="card">
-                  <div className="cardTitle">Income Breakdown</div>
-                  <div className="chartWrap">
-                    <Doughnut data={incomePieData} options={{ plugins: { legend: { labels: { color: "#94A3B8" } } } }} />
-                  </div>
+                  <div className="chartWrap"><Line data={lineData} options={{ responsive: true, maintainAspectRatio: false }} /></div>
                 </div>
                 <div className="card">
                   <div className="cardTitle">Expense Breakdown</div>
-                  <div className="chartWrap">
-                    <Doughnut data={pieData} options={{ plugins: { legend: { labels: { color: "#94A3B8" } } } }} />
-                  </div>
+                  <div className="chartWrap"><Doughnut data={pieData} /></div>
                 </div>
               </div>
             </>
@@ -1279,7 +1248,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .modernTable td{padding:16px 18px;font-size:13px;}
 .modernTable tr td:first-child{border-radius:16px 0 0 16px;}
 .modernTable tr td:last-child{border-radius:0 16px 16px 0;}
-.chartGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:28px;}
+.chartGrid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:28px;}
 .cardTitle{font-size:18px;font-weight:700;}
 .chartWrap{height:320px;margin-top:20px;}
 .category{font-size:13px;}
