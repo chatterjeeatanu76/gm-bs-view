@@ -1065,7 +1065,7 @@ export default function App() {
                     <Bar data={barData} options={{
                       responsive: true,
                       maintainAspectRatio: false,
-                      plugins: { legend: { labels: { color: "#94A3B8" } } },
+                      plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
                       scales: {
                         x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
                         y: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
@@ -1076,13 +1076,27 @@ export default function App() {
                 <div className="card">
                   <div className="cardTitle">Income Breakdown</div>
                   <div className="chartWrap">
-                    <Doughnut data={incomePieData} options={{ plugins: { legend: { labels: { color: "#94A3B8" } } } }} />
+                    <Doughnut data={incomePieData} options={{
+                      plugins: {
+                        legend: {
+                          position: "bottom",
+                          labels: { color: "#94A3B8", boxWidth: 12, padding: 12, font: { size: 11 } },
+                        },
+                      },
+                    }} />
                   </div>
                 </div>
                 <div className="card">
                   <div className="cardTitle">Expense Breakdown</div>
                   <div className="chartWrap">
-                    <Doughnut data={pieData} options={{ plugins: { legend: { labels: { color: "#94A3B8" } } } }} />
+                    <Doughnut data={pieData} options={{
+                      plugins: {
+                        legend: {
+                          position: "bottom",
+                          labels: { color: "#94A3B8", boxWidth: 12, padding: 12, font: { size: 11 } },
+                        },
+                      },
+                    }} />
                   </div>
                 </div>
               </div>
@@ -1289,7 +1303,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .modernTable tr td:last-child{border-radius:0 16px 16px 0;}
 .chartGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:28px;}
 .cardTitle{font-size:18px;font-weight:700;}
-.chartWrap{height:320px;margin-top:20px;}
+.chartWrap{height:360px;margin-top:20px;}
 .category{font-size:13px;}
 .status{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;text-transform:capitalize;}
 .status.income{background:rgba(34,197,94,.15);color:#22C55E;}
