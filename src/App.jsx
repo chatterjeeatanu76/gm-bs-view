@@ -872,12 +872,20 @@ export default function App() {
   const totalExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
   const balance = totalIncome - totalExpense;
 
+  const currentYear = new Date().getFullYear();
+  const activeMonths = MONTHS.filter(([m]) => {
+    const hasIncome  = income.some((r)   => r.date?.startsWith(`${currentYear}-${m}-`) || r.date?.includes(`-${m}-`));
+    const hasExpense = expenses.some((r) => r.date?.startsWith(`${currentYear}-${m}-`) || r.date?.includes(`-${m}-`));
+    return hasIncome || hasExpense;
+  });
+  const chartMonths = activeMonths.length > 0 ? activeMonths : MONTHS.slice(0, 6);
+
   const barData = {
-    labels: MONTHS.slice(-6).map(([, l]) => l.slice(0, 3)),
+    labels: chartMonths.map(([, l]) => l.slice(0, 3)),
     datasets: [
       {
         label: "Income",
-        data: MONTHS.slice(-6).map(([m]) =>
+        data: chartMonths.map(([m]) =>
           income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
         backgroundColor: "#22C55E",
@@ -886,7 +894,7 @@ export default function App() {
       },
       {
         label: "Expenditure",
-        data: MONTHS.slice(-6).map(([m]) =>
+        data: chartMonths.map(([m]) =>
           expenses.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
         backgroundColor: "#EF4444",
