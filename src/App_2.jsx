@@ -1260,8 +1260,8 @@ function SidebarItem({ icon, label, active, onClick }) {
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:Inter,sans-serif;background:#0F172A;color:#E2E8F0;}
-.layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh;height:100vh;overflow:hidden;}
-.sidebar{background:#111827;border-right:1px solid rgba(255,255,255,.06);padding:28px;display:flex;flex-direction:column;justify-content:space-between;height:100vh;position:sticky;top:0;overflow-y:auto;}
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
+.sidebar{background:#111827;border-right:1px solid rgba(255,255,255,.06);padding:28px;display:flex;flex-direction:column;justify-content:space-between;}
 .brand{width:52px;height:52px;border-radius:18px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);display:flex;align-items:center;justify-content:center;font-weight:800;}
 .brandText{margin-top:16px;font-size:24px;font-weight:800;}
 .menu{margin-top:40px;display:flex;flex-direction:column;gap:10px;}
@@ -1272,7 +1272,7 @@ body{font-family:Inter,sans-serif;background:#0F172A;color:#E2E8F0;}
 .avatar{width:44px;height:44px;border-radius:14px;background:#3B82F6;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .profileName{font-weight:600;font-size:15px;}
 .profileSub{color:#64748B;font-size:13px;margin-top:2px;}
-.main{padding:32px;overflow-y:auto;height:100vh;}
+.main{padding:32px;overflow:auto;}
 .topbar{margin-bottom:28px;}
 .eyebrow{color:#64748B;font-size:13px;text-transform:uppercase;}
 .title{font-size:42px;font-weight:800;margin-top:8px;}
