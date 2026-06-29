@@ -1451,6 +1451,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .lightMode .brandText{color:#0F172A !important;}
 .lightMode .eyebrow{color:#94A3B8 !important;}
 .lightMode .title{color:#0F172A !important;}
+.lightMode .topbar{background:#fff; padding:16px 24px, border-radius:24px; box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .lightMode .kpi,.lightMode .card,.lightMode .tableCard,.lightMode .pageCard{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;box-shadow:0 1px 4px rgba(0,0,0,.06) !important;}
 .lightMode .kpiTop div:first-child{color:#64748B !important;}
 .lightMode .kpiValue{color:#0F172A !important;}
