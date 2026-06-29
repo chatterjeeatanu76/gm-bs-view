@@ -979,28 +979,25 @@ export default function App() {
                 <Kpi icon={<Wallet size={18} />}       label="Balance" value={`₹${fmt(balance)}`}      blue />
               </div>
 
-              {/* ── FINANCIAL TREND (full width) ── */}
-              <div className="card" style={{ marginTop: 32, marginBottom: 20 }}>
-                <div className="cardTitle">Financial Trend</div>
-                <div className="chartWrap">
-                  <Bar data={barData} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
-                    scales: {
-                      x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                      y: {
-                        ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
-                        grid: { color: "rgba(255,255,255,.04)" },
+              {/* ── CHARTS: 3 side by side ── */}
+              <div className="chartGrid" style={{ marginTop: 32 }}>
+                <div className="card">
+                  <div className="cardTitle">Financial Trend</div>
+                  <div className="chartWrap">
+                    <Bar data={barData} options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
+                      scales: {
+                        x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
+                        y: {
+                          ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
+                          grid: { color: "rgba(255,255,255,.04)" },
+                        },
                       },
-                    },
-                  }} />
+                    }} />
+                  </div>
                 </div>
-              </div>
-
-              {/* ── INCOME + EXPENSE DOUGHNUTS (side by side) ── */}
-              <div className="chartGrid2" style={{ marginBottom: 20 }}>
-                {/* Income Breakdown */}
                 <div className="card">
                   <div className="cardTitle">Income Breakdown</div>
                   <div style={{ height: 220, marginTop: 12 }}>
@@ -1020,8 +1017,6 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-
-                {/* Expense Breakdown */}
                 <div className="card">
                   <div className="cardTitle">Expense Breakdown</div>
                   <div style={{ height: 220, marginTop: 12 }}>
@@ -1042,8 +1037,6 @@ export default function App() {
                   </div>
                 </div>
               </div>
-
-              {/* ── TRANSACTIONS TABLE ── */}
               <div className="tableCard">
                 <div className="tableHeader">
                   <div>
