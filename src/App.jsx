@@ -1155,9 +1155,9 @@ export default function App() {
                   <div className="payCardTitle">Bank Details</div>
                   <div className="bankList">
                     <div className="bankRow"><span>Account Name</span><strong>Green Meadows Society</strong></div>
-                    <div className="bankRow"><span>Bank Name</span><strong>HDFC Bank</strong></div>
-                    <div className="bankRow"><span>Account Number</span><strong>50100234567891</strong></div>
-                    <div className="bankRow"><span>IFSC Code</span><strong>HDFC0001234</strong></div>
+                    <div className="bankRow"><span>Bank Name</span><strong>Coming Soon</strong></div>
+                    <div className="bankRow"><span>Account Number</span><strong>-</strong></div>
+                    <div className="bankRow"><span>IFSC Code</span><strong>-</strong></div>
                   </div>
                 </div>
               </div>
