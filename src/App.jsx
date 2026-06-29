@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, createContext, useContext } from "react";
 import { supabase } from "./supabaseClient";
 
 import {
@@ -70,6 +70,8 @@ const MONTHS = [
 ];
 
 const fmt = (n) => new Intl.NumberFormat("en-IN").format(Number(n || 0));
+const ThemeContext = createContext(true);
+const useTheme = () => useContext(ThemeContext);
 
 // ── Generate all 55 flat IDs (101–111, 201–211, ... 501–511) ──────────────
 const TOTAL_FLATS = 55;
@@ -326,7 +328,7 @@ function ElectricityTracker() {
                       <td style={{ fontWeight: 600, color: f.paid ? "#22C55E" : "#475569" }}>
                         {f.paid ? `₹ ${fmt(f.amount)}` : "—"}
                       </td>
-                      <td style={{ color: f.paid ? "#CBD5E1" : "#475569" }}>
+                      <td style={{ color: f.paid ? (dark ? "#CBD5E1" : "#334155") : "#475569" }}>
                         {f.paid ? f.usn : "—"}
                       </td>
                       <td style={{ textAlign: "right" }}>
@@ -416,6 +418,7 @@ function ElectricityTracker() {
 
 // ─── MaintenanceDues component ────────────────────────────────────────────────
 function MaintenanceDues() {
+  const dark = useTheme();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -520,7 +523,7 @@ function MaintenanceDues() {
       {/* Collected amount + progress */}
       <div className="tableCard" style={{ marginBottom: 16, padding: "14px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <span style={{ color: "#94A3B8", fontSize: 13 }}>Amount Collected this month</span>
+          <span style={{ color: dark ? "#94A3B8" : "#64748B", fontSize: 13 }}>Amount Collected this month</span>
           <span style={{ fontWeight: 800, fontSize: 18, color: "#22C55E" }}>₹{fmt(totalCollected)}</span>
         </div>
         <div className="elecProgressWrap">
@@ -587,13 +590,13 @@ function MaintenanceDues() {
                 {hasFlatNos
                   ? visible.map((f) => (
                       <tr key={f.id}>
-                        <td style={{ fontWeight: 700, color: "white", fontSize: 14 }}>{f.id}</td>
+                        <td style={{ fontWeight: 700, color: dark ? "white" : "#0F172A", fontSize: 14 }}>{f.id}</td>
                         <td>
                           <span className={`status ${f.paid ? "income" : "expense"}`}>
                             {f.paid ? "Paid" : "Pending"}
                           </span>
                         </td>
-                        <td style={{ color: f.paid ? "#CBD5E1" : "#475569" }}>
+                        <td style={{ color: f.paid ? (dark ? "#CBD5E1" : "#334155") : "#475569" }}>
                           {f.paid
                             ? new Date(f.date).toLocaleDateString("en-GB", {
                                 day: "2-digit", month: "short", year: "numeric",
@@ -608,8 +611,8 @@ function MaintenanceDues() {
                   : visible.map((t, i) => (
                       <tr key={t.id}>
                         <td style={{ color: "#64748B" }}>{i + 1}</td>
-                        <td style={{ fontWeight: 600, color: "white" }}>{t.title || "Maintenance"}</td>
-                        <td style={{ color: "#CBD5E1" }}>
+                        <td style={{ fontWeight: 600, color: dark ? "white" : "#0F172A" }}>{t.title || "Maintenance"}</td>
+                        <td style={{ color: dark ? "#CBD5E1" : "#334155" }}>
                           {t.date
                             ? new Date(t.date).toLocaleDateString("en-GB", {
                                 day: "2-digit", month: "short", year: "numeric",
@@ -641,6 +644,7 @@ function MaintenanceDues() {
 
 // ─── CorpusFund component ──────────────────────────────────────────────────────
 function CorpusFund() {
+  const dark = useTheme();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -815,6 +819,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState("table");
   const [mergedByFlat, setMergedByFlat] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const dark = darkMode;
 
   useEffect(() => {
     const load = async () => {
@@ -938,6 +943,7 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
+      <ThemeContext.Provider value={darkMode}>
       <div className={`layout${darkMode ? "" : " lightMode"}`}>
 
         {/* SIDEBAR */}
@@ -996,7 +1002,7 @@ export default function App() {
                     <Bar data={barData} options={{
                       responsive: true,
                       maintainAspectRatio: false,
-                      plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
+                      plugins: { legend: { position: "top", labels: { color: dark ? "#94A3B8" : "#475569", boxWidth: 12, padding: 16 } } },
                       scales: {
                         x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
                         y: {
@@ -1017,7 +1023,7 @@ export default function App() {
                       <div key={label} className="pieListRow">
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span className="pieDot" style={{ background: incomePieData.datasets[0].backgroundColor[i] }} />
-                          <span style={{ color: "#CBD5E1", fontSize: 13 }}>{label}</span>
+                          <span style={{ color: dark ? "#CBD5E1" : "#334155", fontSize: 13 }}>{label}</span>
                         </div>
                         <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 13 }}>
                           ₹{fmt(incomePieData.datasets[0].data[i])}
@@ -1036,7 +1042,7 @@ export default function App() {
                       <div key={label} className="pieListRow">
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span className="pieDot" style={{ background: pieData.datasets[0].backgroundColor[i] }} />
-                          <span style={{ color: "#CBD5E1", fontSize: 13 }}>{label}</span>
+                          <span style={{ color: dark ? "#CBD5E1" : "#334155", fontSize: 13 }}>{label}</span>
                         </div>
                         <span style={{ color: "#EF4444", fontWeight: 700, fontSize: 13 }}>
                           ₹{fmt(pieData.datasets[0].data[i])}
@@ -1090,7 +1096,7 @@ export default function App() {
                       {displayRows.map((r) => (
                         <tr key={r.id}>
                           <td>{new Date(r.date).toLocaleDateString("en-GB",{day:"2-digit",month:"short"}).replace(",","")}</td>
-                          <td>{r.flat_no || "-"}</td>
+                          <td style={{ color: dark ? '#CBD5E1' : '#334155' }}>{r.flat_no || "-"}</td>
                           <td><span className="category">{r.category}</span></td>
                           <td><span className={`status ${r.type}`}>{r.type}</span></td>
                           <td align="right"><span className={`amount ${r.type === "income" ? "greenText" : "redText"}`}>₹{fmt(r.amount)}</span></td>
@@ -1259,18 +1265,20 @@ export default function App() {
           </div>
         </main>
       </div>
+      </ThemeContext.Provider>
     </>
   );
 }
 
 function Kpi({ icon, label, value, green, red, blue }) {
+  const dark = useTheme();
   return (
     <div className="kpi">
       <div className="kpiTop">
-        <div>{label}</div>
+        <div style={{ color: dark ? "#94A3B8" : "#64748B", fontSize: 13 }}>{label}</div>
         <div className={`kpiIcon ${green ? "green" : red ? "red" : "blue"}`}>{icon}</div>
       </div>
-      <div className="kpiValue">{value}</div>
+      <div className="kpiValue" style={{ color: dark ? "white" : "#0F172A" }}>{value}</div>
     </div>
   );
 }
@@ -1431,55 +1439,57 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .themeToggle:hover{background:rgba(255,255,255,.1);color:white;}
 
 /* ── Light Mode overrides ── */
-.lightMode{background:#F8FAFC;color:#0F172A;}
-.lightMode .sidebar{background:#FFFFFF;border-right:1px solid #E2E8F0;}
-.lightMode .main{background:#F8FAFC;}
-.lightMode .sidebarItem{color:#64748B;}
-.lightMode .sidebarItem:hover{background:rgba(59,130,246,.08);color:#3B82F6;}
-.lightMode .sidebarItem.active{background:rgba(59,130,246,.12);color:#2563EB;}
-.lightMode .eyebrow{color:#94A3B8;}
-.lightMode .title{color:#0F172A;}
-.lightMode .kpiCard{background:#FFFFFF;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.lightMode .kpiLabel{color:#64748B;}
-.lightMode .kpiValue{color:#0F172A;}
-.lightMode .card{background:#FFFFFF;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.lightMode .cardTitle{color:#0F172A;}
-.lightMode .tableCard{background:#FFFFFF;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.lightMode .tableTitle{color:#0F172A;}
-.lightMode .tableSub{color:#64748B;}
-.lightMode .modernTable tbody tr{background:#F8FAFC;}
-.lightMode .modernTable tbody tr:hover{background:#EFF6FF;}
-.lightMode .modernTable td{color:#334155;}
-.lightMode .modernTable th{color:#94A3B8;background:transparent;}
-.lightMode .search{background:#F1F5F9;border:1px solid #E2E8F0;}
-.lightMode .search input{color:#0F172A;}
-.lightMode .search input::placeholder{color:#94A3B8;}
-.lightMode select{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
-.lightMode .profileName{color:#0F172A;}
-.lightMode .profileSub{color:#64748B;}
-.lightMode .profile{background:#F1F5F9;}
-.lightMode .avatar{background:#3B82F6;}
-.lightMode .themeToggle{background:#F1F5F9;border:1px solid #E2E8F0;color:#64748B;}
-.lightMode .themeToggle:hover{background:#E2E8F0;color:#0F172A;}
-.lightMode .pieListRow{background:#F8FAFC;border:1px solid #F1F5F9;}
-.lightMode .corpusFooter{border-top:1px solid #E2E8F0;color:#94A3B8;}
-.lightMode .elecEmpty{color:#64748B;}
-.lightMode .elecControls{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:14px 18px;}
-.lightMode .elecProgressWrap{background:#E2E8F0;}
-.lightMode .elecMonthSelect{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
-.lightMode .elecReset{background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;}
-.lightMode .elecFBtn{color:#64748B;background:#F1F5F9;border:1px solid #E2E8F0;}
-.lightMode .elecFActive{background:#EFF6FF;color:#2563EB;border-color:#93C5FD;}
-.lightMode .elecFilterGroup{background:#F1F5F9;border:1px solid #E2E8F0;}
-.lightMode .toggleBtn{color:#64748B;border-color:#E2E8F0;background:#F8FAFC;}
-.lightMode .toggleBtn:hover{background:#F1F5F9;color:#0F172A;}
-.lightMode .toggleActive{background:#EFF6FF;color:#2563EB;border-color:#93C5FD;}
-.lightMode .viewToggle{background:#F1F5F9;border:1px solid #E2E8F0;}
-.lightMode .category{background:#F1F5F9;color:#475569;}
-.lightMode .elecMonthBadge{background:#EFF6FF;color:#2563EB;}
-.lightMode .summaryCard,.lightMode .tableCard{background:#FFFFFF;}
-.lightMode .refreshBtn{background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;}
-.lightMode .filters select{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
+.lightMode{background:#F1F5F9 !important;color:#0F172A !important;}
+.lightMode .sidebar{background:#FFFFFF !important;border-right:1px solid #E2E8F0 !important;}
+.lightMode .main{background:#F1F5F9 !important;}
+.lightMode .sideItem{color:#475569 !important;}
+.lightMode .sideItem:hover{background:rgba(59,130,246,.08) !important;color:#2563EB !important;}
+.lightMode .sideActive{background:rgba(59,130,246,.12) !important;color:#2563EB !important;}
+.lightMode .brandText{color:#0F172A !important;}
+.lightMode .eyebrow{color:#94A3B8 !important;}
+.lightMode .title{color:#0F172A !important;}
+.lightMode .kpi,.lightMode .card,.lightMode .tableCard,.lightMode .pageCard{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;box-shadow:0 1px 4px rgba(0,0,0,.06) !important;}
+.lightMode .kpiTop div:first-child{color:#64748B !important;}
+.lightMode .kpiValue{color:#0F172A !important;}
+.lightMode .cardTitle,.lightMode .tableTitle{color:#0F172A !important;}
+.lightMode .tableSub{color:#64748B !important;}
+.lightMode .modernTable tbody tr{background:#F8FAFC !important;}
+.lightMode .modernTable tbody tr:hover{background:#EFF6FF !important;}
+.lightMode .modernTable td{color:#334155 !important;}
+.lightMode .modernTable th{color:#64748B !important;}
+.lightMode .category{background:#F1F5F9 !important;color:#475569 !important;}
+.lightMode .search{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;}
+.lightMode .search input{color:#0F172A !important;}
+.lightMode .search input::placeholder{color:#94A3B8 !important;}
+.lightMode .search svg{color:#94A3B8 !important;}
+.lightMode select{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#334155 !important;}
+.lightMode .filters select{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#334155 !important;}
+.lightMode .profileName{color:#0F172A !important;}
+.lightMode .profileSub{color:#64748B !important;}
+.lightMode .profile{background:#F1F5F9 !important;}
+.lightMode .themeToggle{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;color:#475569 !important;}
+.lightMode .themeToggle:hover{background:#E2E8F0 !important;color:#0F172A !important;}
+.lightMode .pieListRow{background:#F8FAFC !important;border:1px solid #F1F5F9 !important;}
+.lightMode .pieListRow span{color:#334155 !important;}
+.lightMode .corpusFooter{border-top:1px solid #E2E8F0 !important;color:#64748B !important;}
+.lightMode .elecEmpty{color:#64748B !important;}
+.lightMode .elecProgressWrap{background:#E2E8F0 !important;}
+.lightMode .elecMonthSelect{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#334155 !important;}
+.lightMode .elecReset{background:#EFF6FF !important;border:1px solid #BFDBFE !important;color:#2563EB !important;}
+.lightMode .elecFBtn{color:#475569 !important;background:#F8FAFC !important;border:1px solid #E2E8F0 !important;}
+.lightMode .elecFActive{background:#EFF6FF !important;color:#2563EB !important;border-color:#93C5FD !important;}
+.lightMode .elecFilterGroup{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;}
+.lightMode .elecMonthBadge{background:#EFF6FF !important;color:#2563EB !important;}
+.lightMode .toggleBtn{color:#475569 !important;border-color:#E2E8F0 !important;background:#F8FAFC !important;}
+.lightMode .toggleBtn:hover{background:#F1F5F9 !important;color:#0F172A !important;}
+.lightMode .toggleActive{background:#EFF6FF !important;color:#2563EB !important;border-color:#93C5FD !important;}
+.lightMode .viewToggle{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;}
+.lightMode .refreshBtn,.lightMode .elecReset{background:#EFF6FF !important;border:1px solid #BFDBFE !important;color:#2563EB !important;}
+.lightMode .markPaidBtn{background:rgba(34,197,94,.15) !important;color:#15803D !important;}
+.lightMode .status.income{background:rgba(34,197,94,.15) !important;color:#15803D !important;}
+.lightMode .status.expense{background:rgba(239,68,68,.12) !important;color:#B91C1C !important;}
+.lightMode .elecPaidBadge{background:rgba(34,197,94,.15) !important;color:#15803D !important;}
+.lightMode .elecPendingBadge{background:rgba(239,68,68,.12) !important;color:#B91C1C !important;}
 
 @media(max-width:1200px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
 @media(max-width:768px){
