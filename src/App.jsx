@@ -979,6 +979,71 @@ export default function App() {
                 <Kpi icon={<Wallet size={18} />}       label="Balance" value={`₹${fmt(balance)}`}      blue />
               </div>
 
+              {/* ── FINANCIAL TREND (full width) ── */}
+              <div className="card" style={{ marginBottom: 20 }}>
+                <div className="cardTitle">Financial Trend</div>
+                <div className="chartWrap">
+                  <Bar data={barData} options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
+                    scales: {
+                      x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
+                      y: {
+                        ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
+                        grid: { color: "rgba(255,255,255,.04)" },
+                      },
+                    },
+                  }} />
+                </div>
+              </div>
+
+              {/* ── INCOME + EXPENSE DOUGHNUTS (side by side) ── */}
+              <div className="chartGrid2" style={{ marginBottom: 20 }}>
+                {/* Income Breakdown */}
+                <div className="card">
+                  <div className="cardTitle">Income Breakdown</div>
+                  <div style={{ height: 220, marginTop: 12 }}>
+                    <Doughnut data={incomePieData} options={{ plugins: { legend: { display: false } }, cutout: "65%" }} />
+                  </div>
+                  <div className="pieList">
+                    {incomePieData.labels.map((label, i) => (
+                      <div key={label} className="pieListRow">
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span className="pieDot" style={{ background: incomePieData.datasets[0].backgroundColor[i] }} />
+                          <span style={{ color: "#CBD5E1", fontSize: 13 }}>{label}</span>
+                        </div>
+                        <span style={{ color: "#22C55E", fontWeight: 700, fontSize: 13 }}>
+                          ₹{fmt(incomePieData.datasets[0].data[i])}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Expense Breakdown */}
+                <div className="card">
+                  <div className="cardTitle">Expense Breakdown</div>
+                  <div style={{ height: 220, marginTop: 12 }}>
+                    <Doughnut data={pieData} options={{ plugins: { legend: { display: false } }, cutout: "65%" }} />
+                  </div>
+                  <div className="pieList">
+                    {pieData.labels.map((label, i) => (
+                      <div key={label} className="pieListRow">
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span className="pieDot" style={{ background: pieData.datasets[0].backgroundColor[i] }} />
+                          <span style={{ color: "#CBD5E1", fontSize: 13 }}>{label}</span>
+                        </div>
+                        <span style={{ color: "#EF4444", fontWeight: 700, fontSize: 13 }}>
+                          ₹{fmt(pieData.datasets[0].data[i])}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── TRANSACTIONS TABLE ── */}
               <div className="tableCard">
                 <div className="tableHeader">
                   <div>
@@ -1058,48 +1123,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="chartGrid">
-                <div className="card">
-                  <div className="cardTitle">Financial Trend</div>
-                  <div className="chartWrap">
-                    <Bar data={barData} options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
-                      scales: {
-                        x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                        y: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                      },
-                    }} />
-                  </div>
-                </div>
-                <div className="card">
-                  <div className="cardTitle">Income Breakdown</div>
-                  <div className="chartWrap">
-                    <Doughnut data={incomePieData} options={{
-                      plugins: {
-                        legend: {
-                          position: "bottom",
-                          labels: { color: "#94A3B8", boxWidth: 12, padding: 12, font: { size: 11 } },
-                        },
-                      },
-                    }} />
-                  </div>
-                </div>
-                <div className="card">
-                  <div className="cardTitle">Expense Breakdown</div>
-                  <div className="chartWrap">
-                    <Doughnut data={pieData} options={{
-                      plugins: {
-                        legend: {
-                          position: "bottom",
-                          labels: { color: "#94A3B8", boxWidth: 12, padding: 12, font: { size: 11 } },
-                        },
-                      },
-                    }} />
-                  </div>
-                </div>
-              </div>
+
             </>
           )}
 
@@ -1302,6 +1326,10 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .modernTable tr td:first-child{border-radius:16px 0 0 16px;}
 .modernTable tr td:last-child{border-radius:0 16px 16px 0;}
 .chartGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:28px;}
+.chartGrid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.pieList{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+.pieListRow{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,.03);border-radius:10px;}
+.pieDot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
 .cardTitle{font-size:18px;font-weight:700;}
 .chartWrap{height:360px;margin-top:20px;}
 .category{font-size:13px;}

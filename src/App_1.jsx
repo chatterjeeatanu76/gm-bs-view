@@ -31,19 +31,21 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   ArcElement,
   Tooltip,
   Legend,
   Filler,
 } from "chart.js";
 
-import { Line, Doughnut } from "react-chartjs-2";
+import { Line, Doughnut, Bar } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   ArcElement,
   Tooltip,
   Legend,
@@ -870,30 +872,49 @@ export default function App() {
   const totalExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
   const balance = totalIncome - totalExpense;
 
-  const lineData = {
-    labels: MONTHS.slice(-6).map(([, l]) => l.slice(0, 3)),
+  const currentYear = new Date().getFullYear();
+  const activeMonths = MONTHS.filter(([m]) => {
+    const hasIncome  = income.some((r)   => r.date?.startsWith(`${currentYear}-${m}-`) || r.date?.includes(`-${m}-`));
+    const hasExpense = expenses.some((r) => r.date?.startsWith(`${currentYear}-${m}-`) || r.date?.includes(`-${m}-`));
+    return hasIncome || hasExpense;
+  });
+  const chartMonths = activeMonths.length > 0 ? activeMonths : MONTHS.slice(0, 6);
+
+  const barData = {
+    labels: chartMonths.map(([, l]) => l.slice(0, 3)),
     datasets: [
       {
         label: "Income",
-        data: MONTHS.slice(-6).map(([m]) =>
+        data: chartMonths.map(([m]) =>
           income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,.08)",
-        fill: true,
-        tension: 0.4,
+        backgroundColor: "#22C55E",
+        borderRadius: 8,
+        borderSkipped: false,
       },
       {
-        label: "Expense",
-        data: MONTHS.slice(-6).map(([m]) =>
+        label: "Expenditure",
+        data: chartMonths.map(([m]) =>
           expenses.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-        borderColor: "#ef4444",
-        backgroundColor: "rgba(239,68,68,.08)",
-        fill: true,
-        tension: 0.4,
+        backgroundColor: "#EF4444",
+        borderRadius: 8,
+        borderSkipped: false,
       },
     ],
+  };
+
+  const incomeMap = income.reduce((acc, item) => {
+    if (item.category) acc[item.category] = (acc[item.category] || 0) + Number(item.amount);
+    return acc;
+  }, {});
+
+  const incomePieData = {
+    labels: Object.keys(incomeMap),
+    datasets: [{
+      data: Object.values(incomeMap),
+      backgroundColor: ["#14B8A6","#3B82F6","#F59E0B","#22C55E","#8B5CF6","#F97316","#EF4444"],
+    }],
   };
 
   const expenseMap = expenses.reduce((acc, item) => {
@@ -1040,11 +1061,43 @@ export default function App() {
               <div className="chartGrid">
                 <div className="card">
                   <div className="cardTitle">Financial Trend</div>
-                  <div className="chartWrap"><Line data={lineData} options={{ responsive: true, maintainAspectRatio: false }} /></div>
+                  <div className="chartWrap">
+                    <Bar data={barData} options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { position: "top", labels: { color: "#94A3B8", boxWidth: 12, padding: 16 } } },
+                      scales: {
+                        x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
+                        y: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
+                      },
+                    }} />
+                  </div>
+                </div>
+                <div className="card">
+                  <div className="cardTitle">Income Breakdown</div>
+                  <div className="chartWrap">
+                    <Doughnut data={incomePieData} options={{
+                      plugins: {
+                        legend: {
+                          position: "bottom",
+                          labels: { color: "#94A3B8", boxWidth: 12, padding: 12, font: { size: 11 } },
+                        },
+                      },
+                    }} />
+                  </div>
                 </div>
                 <div className="card">
                   <div className="cardTitle">Expense Breakdown</div>
-                  <div className="chartWrap"><Doughnut data={pieData} /></div>
+                  <div className="chartWrap">
+                    <Doughnut data={pieData} options={{
+                      plugins: {
+                        legend: {
+                          position: "bottom",
+                          labels: { color: "#94A3B8", boxWidth: 12, padding: 12, font: { size: 11 } },
+                        },
+                      },
+                    }} />
+                  </div>
                 </div>
               </div>
             </>
@@ -1207,8 +1260,8 @@ function SidebarItem({ icon, label, active, onClick }) {
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:Inter,sans-serif;background:#0F172A;color:#E2E8F0;}
-.layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
-.sidebar{background:#111827;border-right:1px solid rgba(255,255,255,.06);padding:28px;display:flex;flex-direction:column;justify-content:space-between;}
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh;height:100vh;overflow:hidden;}
+.sidebar{background:#111827;border-right:1px solid rgba(255,255,255,.06);padding:28px;display:flex;flex-direction:column;justify-content:space-between;height:100vh;position:sticky;top:0;overflow-y:auto;}
 .brand{width:52px;height:52px;border-radius:18px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);display:flex;align-items:center;justify-content:center;font-weight:800;}
 .brandText{margin-top:16px;font-size:24px;font-weight:800;}
 .menu{margin-top:40px;display:flex;flex-direction:column;gap:10px;}
@@ -1219,7 +1272,7 @@ body{font-family:Inter,sans-serif;background:#0F172A;color:#E2E8F0;}
 .avatar{width:44px;height:44px;border-radius:14px;background:#3B82F6;display:flex;align-items:center;justify-content:center;font-weight:700;}
 .profileName{font-weight:600;font-size:15px;}
 .profileSub{color:#64748B;font-size:13px;margin-top:2px;}
-.main{padding:32px;overflow:auto;}
+.main{padding:32px;overflow-y:auto;height:100vh;}
 .topbar{margin-bottom:28px;}
 .eyebrow{color:#64748B;font-size:13px;text-transform:uppercase;}
 .title{font-size:42px;font-weight:800;margin-top:8px;}
@@ -1248,9 +1301,9 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .modernTable td{padding:16px 18px;font-size:13px;}
 .modernTable tr td:first-child{border-radius:16px 0 0 16px;}
 .modernTable tr td:last-child{border-radius:0 16px 16px 0;}
-.chartGrid{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-top:28px;}
+.chartGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:28px;}
 .cardTitle{font-size:18px;font-weight:700;}
-.chartWrap{height:320px;margin-top:20px;}
+.chartWrap{height:360px;margin-top:20px;}
 .category{font-size:13px;}
 .status{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;text-transform:capitalize;}
 .status.income{background:rgba(34,197,94,.15);color:#22C55E;}
