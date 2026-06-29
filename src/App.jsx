@@ -888,7 +888,7 @@ export default function App() {
         data: chartMonths.map(([m]) =>
           income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
         ),
-        backgroundColor: "#22C55E",
+        backgroundColor: "#3B82F6",
         borderRadius: 8,
         borderSkipped: false,
       },
@@ -980,7 +980,7 @@ export default function App() {
               </div>
 
               {/* ── FINANCIAL TREND (full width) ── */}
-              <div className="card" style={{ marginBottom: 20 }}>
+              <div className="card" style={{ marginTop: 32, marginBottom: 20 }}>
                 <div className="cardTitle">Financial Trend</div>
                 <div className="chartWrap">
                   <Bar data={barData} options={{
