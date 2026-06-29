@@ -978,22 +978,17 @@ export default function App() {
             </div>
           </div>
         </aside>
-        <div className="topbar">
-                <div className="eyebrow">Green Meadows : Block A</div>
-                <div className="title">Balance Sheet</div>
-        </div>
+
         {/* MAIN */}
         <main className="main">
 
           {/* DASHBOARD */}
           {activePage === "dashboard" && (
             <>
-            {/*}
               <div className="topbar">
                 <div className="eyebrow">Green Meadows : Block A</div>
                 <div className="title">Balance Sheet</div>
               </div>
-              */}
               <div className="kpiGrid">
                 <Kpi icon={<TrendingUp size={18} />}  label="Income"  value={`₹${fmt(totalIncome)}`}  green />
                 <Kpi icon={<TrendingDown size={18} />} label="Expense" value={`₹${fmt(totalExpense)}`} red />
