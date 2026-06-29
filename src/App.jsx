@@ -1431,40 +1431,55 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .themeToggle:hover{background:rgba(255,255,255,.1);color:white;}
 
 /* ── Light Mode overrides ── */
-.lightMode{background:#F1F5F9;color:#0F172A;}
+.lightMode{background:#F8FAFC;color:#0F172A;}
 .lightMode .sidebar{background:#FFFFFF;border-right:1px solid #E2E8F0;}
-.lightMode .main{background:#F1F5F9;}
+.lightMode .main{background:#F8FAFC;}
 .lightMode .sidebarItem{color:#64748B;}
-.lightMode .sidebarItem:hover,.lightMode .sidebarItem.active{background:rgba(59,130,246,.1);color:#1E40AF;}
+.lightMode .sidebarItem:hover{background:rgba(59,130,246,.08);color:#3B82F6;}
+.lightMode .sidebarItem.active{background:rgba(59,130,246,.12);color:#2563EB;}
 .lightMode .eyebrow{color:#94A3B8;}
 .lightMode .title{color:#0F172A;}
-.lightMode .kpiCard{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .kpiCard{background:#FFFFFF;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .lightMode .kpiLabel{color:#64748B;}
 .lightMode .kpiValue{color:#0F172A;}
-.lightMode .card{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .card{background:#FFFFFF;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .lightMode .cardTitle{color:#0F172A;}
-.lightMode .tableCard{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .tableCard{background:#FFFFFF;border:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .lightMode .tableTitle{color:#0F172A;}
 .lightMode .tableSub{color:#64748B;}
 .lightMode .modernTable tbody tr{background:#F8FAFC;}
-.lightMode .modernTable tbody tr:hover{background:#F1F5F9;}
+.lightMode .modernTable tbody tr:hover{background:#EFF6FF;}
 .lightMode .modernTable td{color:#334155;}
-.lightMode .modernTable th{color:#94A3B8;}
+.lightMode .modernTable th{color:#94A3B8;background:transparent;}
 .lightMode .search{background:#F1F5F9;border:1px solid #E2E8F0;}
 .lightMode .search input{color:#0F172A;}
+.lightMode .search input::placeholder{color:#94A3B8;}
 .lightMode select{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
 .lightMode .profileName{color:#0F172A;}
 .lightMode .profileSub{color:#64748B;}
+.lightMode .profile{background:#F1F5F9;}
 .lightMode .avatar{background:#3B82F6;}
 .lightMode .themeToggle{background:#F1F5F9;border:1px solid #E2E8F0;color:#64748B;}
 .lightMode .themeToggle:hover{background:#E2E8F0;color:#0F172A;}
-.lightMode .pieListRow{background:#F8FAFC;}
+.lightMode .pieListRow{background:#F8FAFC;border:1px solid #F1F5F9;}
 .lightMode .corpusFooter{border-top:1px solid #E2E8F0;color:#94A3B8;}
 .lightMode .elecEmpty{color:#64748B;}
-.lightMode .elecControls{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .elecControls{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:14px 18px;}
 .lightMode .elecProgressWrap{background:#E2E8F0;}
-.lightMode .toggleBtn{color:#64748B;border-color:#E2E8F0;}
-.lightMode .toggleActive{background:rgba(59,130,246,.1);color:#1E40AF;border-color:#93C5FD;}
+.lightMode .elecMonthSelect{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
+.lightMode .elecReset{background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;}
+.lightMode .elecFBtn{color:#64748B;background:#F1F5F9;border:1px solid #E2E8F0;}
+.lightMode .elecFActive{background:#EFF6FF;color:#2563EB;border-color:#93C5FD;}
+.lightMode .elecFilterGroup{background:#F1F5F9;border:1px solid #E2E8F0;}
+.lightMode .toggleBtn{color:#64748B;border-color:#E2E8F0;background:#F8FAFC;}
+.lightMode .toggleBtn:hover{background:#F1F5F9;color:#0F172A;}
+.lightMode .toggleActive{background:#EFF6FF;color:#2563EB;border-color:#93C5FD;}
+.lightMode .viewToggle{background:#F1F5F9;border:1px solid #E2E8F0;}
+.lightMode .category{background:#F1F5F9;color:#475569;}
+.lightMode .elecMonthBadge{background:#EFF6FF;color:#2563EB;}
+.lightMode .summaryCard,.lightMode .tableCard{background:#FFFFFF;}
+.lightMode .refreshBtn{background:#EFF6FF;border:1px solid #BFDBFE;color:#2563EB;}
+.lightMode .filters select{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
 
 @media(max-width:1200px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
 @media(max-width:768px){
