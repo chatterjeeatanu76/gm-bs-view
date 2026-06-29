@@ -1153,14 +1153,14 @@ export default function App() {
                 </div>
                 <div className="payCard">
                   <div className="payCardTitle">Bank Details</div>
-                    <div className="qrWrapper">
-                        <div className="bankList">
-                          <div className="bankRow"><span>Account Name</span><strong>Green Meadows Society</strong></div>
-                          <div className="bankRow"><span>Bank Name</span><strong>Coming Soon</strong></div>
-                          <div className="bankRow"><span>Account Number</span><strong>-</strong></div>
-                          <div className="bankRow"><span>IFSC Code</span><strong>-</strong></div>
-                        </div>
-                      </div>
+                  <div className="bankList">
+                    <div className="bankRow"><span>Account Name</span><strong>Green Meadows Society</strong></div>
+                    <div className="bankRow"><span>Bank Name</span><strong>Coming Soon</strong></div>
+                    <div className="bankRow"><span>Account Number</span><strong>-</strong></div>
+                    <div className="bankRow"><span>IFSC Code</span><strong>-</strong></div>
+                  </div>
+
+                  
                 </div>
               </div>
               <div className="noticeCard">⚠ Kindly complete the maintenance payment before the 10th of every month to avoid late charges.</div>
