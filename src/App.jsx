@@ -999,23 +999,7 @@ export default function App() {
 
               {/* ── CHARTS: 3 side by side ── */}
               <div className="chartGrid">
-                <div className="card">
-                  <div className="cardTitle">Financial Trend</div>
-                  <div className="chartWrap">
-                    <Bar data={barData} options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: { legend: { position: "top", labels: { color: dark ? "#94A3B8" : "#475569", boxWidth: 12, padding: 16 } } },
-                      scales: {
-                        x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                        y: {
-                          ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
-                          grid: { color: "rgba(255,255,255,.04)" },
-                        },
-                      },
-                    }} />
-                  </div>
-                </div>
+                
                 <div className="card">
                   <div className="cardTitle">Income Breakdown</div>
                   <div style={{ height: 220, marginTop: 12 }}>
@@ -1054,6 +1038,24 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+                <div className="card">
+                  <div className="cardTitle">Financial Trend</div>
+                  <div className="chartWrap">
+                    <Bar data={barData} options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { position: "top", labels: { color: dark ? "#94A3B8" : "#475569", boxWidth: 12, padding: 16 } } },
+                      scales: {
+                        x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
+                        y: {
+                          ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
+                          grid: { color: "rgba(255,255,255,.04)" },
+                        },
+                      },
+                    }} />
+                  </div>
+                </div>     
+
               </div>
               <div className="tableCard">
                 <div className="tableHeader">
