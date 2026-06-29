@@ -1474,6 +1474,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .lightMode .profileName{color:#0F172A !important;}
 .lightMode .profileSub{color:#64748B !important;}
 .lightMode .profile{background:#F1F5F9 !important;}
+.lightMode .payCard{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;box-shadow:0 1px 4px rgba(0,0,0,.06) !important;}
 .lightMode .themeToggle{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;color:#475569 !important;}
 .lightMode .themeToggle:hover{background:#E2E8F0 !important;color:#0F172A !important;}
 .lightMode .pieListRow{background:#F8FAFC !important;border:1px solid #F1F5F9 !important;}
