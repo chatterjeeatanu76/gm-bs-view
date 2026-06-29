@@ -1150,7 +1150,7 @@ export default function App() {
               <div className="payGrid">
                 <div className="payCard">
                   <div className="payCardTitle">Scan &amp; Pay</div>
-                  <div className="qrWrapper"><img src="/images/GooglePay_QR.png" alt="QR" /></div>
+                  <div className="qrWrapper"><img src="/images/QR_code.png" alt="QR" /></div>
                   <div className="paySub">UPI ID: greenmeadows@upi</div>
                 </div>
                 <div className="payCard">
