@@ -23,6 +23,8 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   ClipboardList,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import {
@@ -812,6 +814,7 @@ export default function App() {
   const [historySearch, setHistorySearch] = useState("");
   const [viewMode, setViewMode] = useState("table");
   const [mergedByFlat, setMergedByFlat] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -935,7 +938,7 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      <div className="layout">
+      <div className={`layout${darkMode ? "" : " lightMode"}`}>
 
         {/* SIDEBAR */}
         <aside className="sidebar">
@@ -954,11 +957,17 @@ export default function App() {
               {/* <SidebarItem icon={<Settings size={18} />}        label="Settings"        active={activePage === "settings"}    onClick={() => setActivePage("settings")} /> */}
             </div>
           </div>
-          <div className="profile">
-            <div className="avatar">GM</div>
-            <div>
-              <div className="profileName">Block A</div>
-              <div className="profileSub">Finance Admin</div>
+          <div>
+            <button className="themeToggle" onClick={() => setDarkMode((v) => !v)} title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+            <div className="profile">
+              <div className="avatar">GM</div>
+              <div>
+                <div className="profileName">Block A</div>
+                <div className="profileSub">Finance Admin</div>
+              </div>
             </div>
           </div>
         </aside>
@@ -1418,6 +1427,44 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .loader{height:100vh;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .mobileNav{display:none;}
 .corpusFooter{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);color:#64748B;font-size:13px;}
+.themeToggle{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;margin-bottom:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#94A3B8;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;}
+.themeToggle:hover{background:rgba(255,255,255,.1);color:white;}
+
+/* ── Light Mode overrides ── */
+.lightMode{background:#F1F5F9;color:#0F172A;}
+.lightMode .sidebar{background:#FFFFFF;border-right:1px solid #E2E8F0;}
+.lightMode .main{background:#F1F5F9;}
+.lightMode .sidebarItem{color:#64748B;}
+.lightMode .sidebarItem:hover,.lightMode .sidebarItem.active{background:rgba(59,130,246,.1);color:#1E40AF;}
+.lightMode .eyebrow{color:#94A3B8;}
+.lightMode .title{color:#0F172A;}
+.lightMode .kpiCard{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .kpiLabel{color:#64748B;}
+.lightMode .kpiValue{color:#0F172A;}
+.lightMode .card{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .cardTitle{color:#0F172A;}
+.lightMode .tableCard{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .tableTitle{color:#0F172A;}
+.lightMode .tableSub{color:#64748B;}
+.lightMode .modernTable tbody tr{background:#F8FAFC;}
+.lightMode .modernTable tbody tr:hover{background:#F1F5F9;}
+.lightMode .modernTable td{color:#334155;}
+.lightMode .modernTable th{color:#94A3B8;}
+.lightMode .search{background:#F1F5F9;border:1px solid #E2E8F0;}
+.lightMode .search input{color:#0F172A;}
+.lightMode select{background:#F1F5F9;border:1px solid #E2E8F0;color:#334155;}
+.lightMode .profileName{color:#0F172A;}
+.lightMode .profileSub{color:#64748B;}
+.lightMode .avatar{background:#3B82F6;}
+.lightMode .themeToggle{background:#F1F5F9;border:1px solid #E2E8F0;color:#64748B;}
+.lightMode .themeToggle:hover{background:#E2E8F0;color:#0F172A;}
+.lightMode .pieListRow{background:#F8FAFC;}
+.lightMode .corpusFooter{border-top:1px solid #E2E8F0;color:#94A3B8;}
+.lightMode .elecEmpty{color:#64748B;}
+.lightMode .elecControls{background:#FFFFFF;border:1px solid #E2E8F0;}
+.lightMode .elecProgressWrap{background:#E2E8F0;}
+.lightMode .toggleBtn{color:#64748B;border-color:#E2E8F0;}
+.lightMode .toggleActive{background:rgba(59,130,246,.1);color:#1E40AF;border-color:#93C5FD;}
 
 @media(max-width:1200px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
 @media(max-width:768px){
