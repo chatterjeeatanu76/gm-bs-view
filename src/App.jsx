@@ -998,7 +998,7 @@ export default function App() {
               </div>
 
               {/* ── CHARTS: 3 side by side ── */}
-              <div className="chartGrid" style={{ marginTop: 32 }}>
+              <div className="chartGrid">
                 <div className="card">
                   <div className="cardTitle">Financial Trend</div>
                   <div className="chartWrap">
