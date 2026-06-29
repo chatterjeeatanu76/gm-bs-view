@@ -1320,7 +1320,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .modernTable tr td:last-child{border-radius:0 16px 16px 0;}
 .chartGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:28px;}
 .chartGrid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-.pieList{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+.pieList{margin-top:16px;display:flex;flex-direction:column;gap:5px;}
 .pieListRow{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,.03);border-radius:10px;}
 .pieDot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
 .cardTitle{font-size:18px;font-weight:700;}
