@@ -1151,7 +1151,7 @@ export default function App() {
                 <div className="payCard">
                   <div className="payCardTitle">Scan &amp; Pay</div>
                   <div className="qrWrapper"><img src="/images/QR_code.png" alt="QR" /></div>
-                  <div className="paySub">UPI ID: greenmeadows@upi</div>
+                  {/*<div className="paySub">UPI ID: greenmeadows@upi</div>*/}
                 </div>
                 <div className="payCard">
                   <div className="payCardTitle">Bank Details</div>
