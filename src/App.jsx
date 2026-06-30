@@ -1221,7 +1221,7 @@ export default function App() {
 
                     <div className="card" style={{ marginBottom: 0 }}>
                       <div className="cardTitle">Month-wise Income vs Expenditure</div>
-                      <div className="chartWrap">
+                      <div style={{ height: 220, marginTop: 16 }}>
                         <Bar data={overallBarData} options={{
                           responsive: true,
                           maintainAspectRatio: false,
@@ -1556,7 +1556,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 
 /* Overall View modal */
 .modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(2px);}
-.modalBox{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:28px;max-width:920px;width:100%;max-height:90vh;overflow-y:auto;}
+.modalBox{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:28px;max-width:920px;width:100%;max-height:95vh;overflow:visible;}
 .modalHeader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
 .modalTitle{font-size:24px;font-weight:800;color:white;}
 .modalSub{color:#94A3B8;font-size:13px;margin-top:6px;}
