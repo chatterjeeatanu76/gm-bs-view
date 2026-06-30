@@ -1313,7 +1313,7 @@ export default function App() {
           )}
 
           {/* ELECTRICITY TRACKER */}
-  {/*        {activePage === "electricity" && <ElectricityTracker />} */}
+          {activePage === "electricity" && <ElectricityTracker />} 
 
           {/* MAINTENANCE DUES */}
           {activePage === "dues" && <MaintenanceDues />}
