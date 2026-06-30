@@ -894,6 +894,21 @@ export default function App() {
   const totalExpense = monthExpense;
   const balance       = monthBalance;
 
+  const dashboardMonthLabel = (() => {
+    const [yr, mo] = dashboardMonth.split("-");
+    const lbl = MONTHS.find(([m]) => m === mo);
+    return lbl ? `${lbl[1]} ${yr}` : dashboardMonth;
+  })();
+  const dashboardMonthLabelShort = (() => {
+    const [, mo] = dashboardMonth.split("-");
+    const lbl = MONTHS.find(([m]) => m === mo);
+    return lbl ? lbl[1].slice(0, 3) : dashboardMonth;
+  })();
+
+  // Transactions filtered to the selected dashboard month (used by all 3 charts below)
+  const monthIncomeRows   = income.filter((r)   => r.date?.startsWith(dashboardMonth));
+  const monthExpenseRows  = expenses.filter((r) => r.date?.startsWith(dashboardMonth));
+
   const currentYear = new Date().getFullYear();
   const activeMonths = MONTHS.filter(([m]) => {
     const hasIncome  = income.some((r)   => r.date?.startsWith(`${currentYear}-${m}-`) || r.date?.includes(`-${m}-`));
@@ -902,23 +917,20 @@ export default function App() {
   });
   const chartMonths = activeMonths.length > 0 ? activeMonths : MONTHS.slice(0, 6);
 
+  // Financial Trend — single bar pair for the SELECTED month only (matches Income/Expense KPI cards)
   const barData = {
-    labels: chartMonths.map(([, l]) => l.slice(0, 3)),
+    labels: [dashboardMonthLabelShort],
     datasets: [
       {
         label: "Income",
-        data: chartMonths.map(([m]) =>
-          income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
-        ),
+        data: [monthIncome],
         backgroundColor: "#3B82F6",
         borderRadius: 8,
         borderSkipped: false,
       },
       {
         label: "Expenditure",
-        data: chartMonths.map(([m]) =>
-          expenses.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
-        ),
+        data: [monthExpense],
         backgroundColor: "#EF4444",
         borderRadius: 8,
         borderSkipped: false,
@@ -926,7 +938,8 @@ export default function App() {
     ],
   };
 
-  const incomeMap = income.reduce((acc, item) => {
+  // Income/Expense Breakdown doughnuts — also filtered to the selected month
+  const incomeMap = monthIncomeRows.reduce((acc, item) => {
     if (item.category) acc[item.category] = (acc[item.category] || 0) + Number(item.amount);
     return acc;
   }, {});
@@ -939,7 +952,7 @@ export default function App() {
     }],
   };
 
-  const expenseMap = expenses.reduce((acc, item) => {
+  const expenseMap = monthExpenseRows.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + Number(item.amount);
     return acc;
   }, {});
@@ -976,12 +989,6 @@ export default function App() {
       },
     ],
   };
-
-  const dashboardMonthLabel = (() => {
-    const [yr, mo] = dashboardMonth.split("-");
-    const label = MONTHS.find(([m]) => m === mo);
-    return label ? `${label[1]} ${yr}` : dashboardMonth;
-  })();
 
   if (loading) return <div className="loader">Loading dashboard...</div>;
 
@@ -1543,7 +1550,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 
 /* Balance Sheet header controls */
 .showingBadge{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#93C5FD;background:rgba(59,130,246,.12);padding:5px 12px;border-radius:999px;}
-.dashMonthPicker{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:white;border-radius:12px;padding:10px 14px;font-size:13px;cursor:pointer;outline:none;}
+.dashMonthPicker{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:white;border-radius:12px;padding:10px 14px;font-size:13px;cursor:pointer;outline:none;color-scheme:dark;}
 .overallViewBtn{display:flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
 .overallViewBtn:hover{opacity:.9;}
 
@@ -1612,7 +1619,7 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .lightMode .elecPaidBadge{background:rgba(34,197,94,.15) !important;color:#15803D !important;}
 .lightMode .elecPendingBadge{background:rgba(239,68,68,.12) !important;color:#B91C1C !important;}
 .lightMode .showingBadge{background:rgba(59,130,246,.1) !important;color:#2563EB !important;}
-.lightMode .dashMonthPicker{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#334155 !important;}
+.lightMode .dashMonthPicker{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#334155 !important;color-scheme:light;}
 .lightMode .modalBox{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;}
 .lightMode .modalTitle{color:#0F172A !important;}
 .lightMode .modalSub{color:#64748B !important;}
