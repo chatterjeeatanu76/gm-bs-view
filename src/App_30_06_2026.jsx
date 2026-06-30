@@ -821,8 +821,6 @@ export default function App() {
   const [mergedByFlat, setMergedByFlat] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const dark = darkMode;
-  const [dashboardMonth, setDashboardMonth] = useState(currentMonth()); // "YYYY-MM", defaults to current month
-  const [showOverallModal, setShowOverallModal] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -879,20 +877,9 @@ export default function App() {
 
   const income = transactions.filter((x) => x.type === "income");
   const expenses = transactions.filter((x) => x.type === "expense");
-
-  // All-time totals (used in Overall View modal)
-  const allTimeIncome  = income.reduce((a, b) => a + Number(b.amount || 0), 0);
-  const allTimeExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
-  const allTimeBalance = allTimeIncome - allTimeExpense;
-
-  // Month-filtered totals (used in main KPI cards) — defaults to current month
-  const monthIncome  = income.filter((r)   => r.date?.startsWith(dashboardMonth)).reduce((a, b) => a + Number(b.amount || 0), 0);
-  const monthExpense = expenses.filter((r) => r.date?.startsWith(dashboardMonth)).reduce((a, b) => a + Number(b.amount || 0), 0);
-  const monthBalance = monthIncome - monthExpense;
-
-  const totalIncome  = monthIncome;
-  const totalExpense = monthExpense;
-  const balance       = monthBalance;
+  const totalIncome = income.reduce((a, b) => a + Number(b.amount || 0), 0);
+  const totalExpense = expenses.reduce((a, b) => a + Number(b.amount || 0), 0);
+  const balance = totalIncome - totalExpense;
 
   const currentYear = new Date().getFullYear();
   const activeMonths = MONTHS.filter(([m]) => {
@@ -952,37 +939,6 @@ export default function App() {
     }],
   };
 
-  // ── Overall View modal: all-time month-wise bar chart ──
-  const overallBarData = {
-    labels: chartMonths.map(([, l]) => l.slice(0, 3)),
-    datasets: [
-      {
-        label: "Income",
-        data: chartMonths.map(([m]) =>
-          income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
-        ),
-        backgroundColor: "#3B82F6",
-        borderRadius: 8,
-        borderSkipped: false,
-      },
-      {
-        label: "Expenditure",
-        data: chartMonths.map(([m]) =>
-          expenses.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
-        ),
-        backgroundColor: "#EF4444",
-        borderRadius: 8,
-        borderSkipped: false,
-      },
-    ],
-  };
-
-  const dashboardMonthLabel = (() => {
-    const [yr, mo] = dashboardMonth.split("-");
-    const label = MONTHS.find(([m]) => m === mo);
-    return label ? `${label[1]} ${yr}` : dashboardMonth;
-  })();
-
   if (loading) return <div className="loader">Loading dashboard...</div>;
 
   return (
@@ -1030,23 +986,9 @@ export default function App() {
           {activePage === "dashboard" && (
             <>
             
-              <div className="topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
-                <div>
-                  <div className="eyebrow">Green Meadows : Block A</div>
-                  <div className="title">Balance Sheet</div>
-                  <div className="showingBadge">Showing: {dashboardMonthLabel}</div>
-                </div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <input
-                    type="month"
-                    className="dashMonthPicker"
-                    value={dashboardMonth}
-                    onChange={(e) => setDashboardMonth(e.target.value)}
-                  />
-                  <button className="overallViewBtn" onClick={() => setShowOverallModal(true)}>
-                    Overall View
-                  </button>
-                </div>
+              <div className="topbar">
+                <div className="eyebrow">Green Meadows : Block A</div>
+                <div className="title">Balance Sheet</div>
               </div>
               
               <div className="kpiGrid">
@@ -1194,44 +1136,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── OVERALL VIEW MODAL ── */}
-              {showOverallModal && (
-                <div className="modalOverlay" onClick={() => setShowOverallModal(false)}>
-                  <div className="modalBox" onClick={(e) => e.stopPropagation()}>
-                    <div className="modalHeader">
-                      <div>
-                        <div className="modalTitle">Overall View</div>
-                        <div className="modalSub">All-time totals across every recorded month</div>
-                      </div>
-                      <button className="modalCloseBtn" onClick={() => setShowOverallModal(false)}>✕</button>
-                    </div>
-
-                    <div className="kpiGrid" style={{ marginBottom: 20 }}>
-                      <Kpi icon={<TrendingUp size={18} />}   label="Total Income"  value={`₹${fmt(allTimeIncome)}`}  green />
-                      <Kpi icon={<TrendingDown size={18} />} label="Total Expense" value={`₹${fmt(allTimeExpense)}`} red />
-                      <Kpi icon={<Wallet size={18} />}        label="Total Balance" value={`₹${fmt(allTimeBalance)}`} blue />
-                    </div>
-
-                    <div className="card" style={{ marginBottom: 0 }}>
-                      <div className="cardTitle">Month-wise Income vs Expenditure</div>
-                      <div className="chartWrap">
-                        <Bar data={overallBarData} options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: { legend: { position: "top", labels: { color: dark ? "#94A3B8" : "#475569", boxWidth: 12, padding: 16 } } },
-                          scales: {
-                            x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                            y: {
-                              ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
-                              grid: { color: "rgba(255,255,255,.04)" },
-                            },
-                          },
-                        }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
             </>
           )}
@@ -1541,21 +1445,6 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .themeToggle{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;margin-bottom:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#94A3B8;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;}
 .themeToggle:hover{background:rgba(255,255,255,.1);color:white;}
 
-/* Balance Sheet header controls */
-.showingBadge{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:#93C5FD;background:rgba(59,130,246,.12);padding:5px 12px;border-radius:999px;}
-.dashMonthPicker{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:white;border-radius:12px;padding:10px 14px;font-size:13px;cursor:pointer;outline:none;}
-.overallViewBtn{display:flex;align-items:center;gap:6px;padding:10px 20px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:white;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
-.overallViewBtn:hover{opacity:.9;}
-
-/* Overall View modal */
-.modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(2px);}
-.modalBox{background:#111827;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:28px;max-width:920px;width:100%;max-height:90vh;overflow-y:auto;}
-.modalHeader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
-.modalTitle{font-size:24px;font-weight:800;color:white;}
-.modalSub{color:#94A3B8;font-size:13px;margin-top:6px;}
-.modalCloseBtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#94A3B8;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px;flex-shrink:0;}
-.modalCloseBtn:hover{background:rgba(255,255,255,.1);color:white;}
-
 /* ── Light Mode overrides ── */
 .lightMode{background:#F1F5F9 !important;color:#0F172A !important;}
 .lightMode .sidebar{background:#FFFFFF !important;border-right:1px solid #E2E8F0 !important;}
@@ -1611,13 +1500,6 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .lightMode .status.expense{background:rgba(239,68,68,.12) !important;color:#B91C1C !important;}
 .lightMode .elecPaidBadge{background:rgba(34,197,94,.15) !important;color:#15803D !important;}
 .lightMode .elecPendingBadge{background:rgba(239,68,68,.12) !important;color:#B91C1C !important;}
-.lightMode .showingBadge{background:rgba(59,130,246,.1) !important;color:#2563EB !important;}
-.lightMode .dashMonthPicker{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#334155 !important;}
-.lightMode .modalBox{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;}
-.lightMode .modalTitle{color:#0F172A !important;}
-.lightMode .modalSub{color:#64748B !important;}
-.lightMode .modalCloseBtn{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;color:#64748B !important;}
-.lightMode .modalCloseBtn:hover{background:#E2E8F0 !important;color:#0F172A !important;}
 
 @media(max-width:1200px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}}
 @media(max-width:768px){
