@@ -1007,7 +1007,7 @@ export default function App() {
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard"      active={activePage === "dashboard"}   onClick={() => setActivePage("dashboard")} />
               <SidebarItem icon={<Wallet size={18} />}          label="Pay Now"         active={activePage === "paynow"}      onClick={() => setActivePage("paynow")} />
               {/* <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} /> */}
-              <SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} />
+              {/*<SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} /> */}
               <SidebarItem icon={<ClipboardList size={18} />}    label="Maintenance Dues" active={activePage === "dues"}        onClick={() => setActivePage("dues")} />
               <SidebarItem icon={<PiggyBank size={18} />}        label="Corpus Fund"     active={activePage === "corpus"}      onClick={() => setActivePage("corpus")} />
               <SidebarItem icon={<FileText size={18} />}        label="Society Rules"   active={activePage === "rules"}       onClick={() => setActivePage("rules")} />
