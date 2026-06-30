@@ -819,7 +819,6 @@ export default function App() {
   const [historySearch, setHistorySearch] = useState("");
   const [viewMode, setViewMode] = useState("table");
   const [mergedByFlat, setMergedByFlat] = useState(false);
-  const [txTypeFilter, setTxTypeFilter] = useState("all");
   const [darkMode, setDarkMode] = useState(true);
   const dark = darkMode;
   const [dashboardMonth, setDashboardMonth] = useState(currentMonth()); // "YYYY-MM", defaults to current month
@@ -876,8 +875,7 @@ export default function App() {
     }));
   }, [filtered]);
 
-  const baseRows = mergedByFlat ? mergedFiltered : filtered;
-  const displayRows = txTypeFilter === "all" ? baseRows : baseRows.filter((r) => r.type === txTypeFilter);
+  const displayRows = mergedByFlat ? mergedFiltered : filtered;
 
   const income = transactions.filter((x) => x.type === "income");
   const expenses = transactions.filter((x) => x.type === "expense");
@@ -1009,7 +1007,7 @@ export default function App() {
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard"      active={activePage === "dashboard"}   onClick={() => setActivePage("dashboard")} />
               <SidebarItem icon={<Wallet size={18} />}          label="Pay Now"         active={activePage === "paynow"}      onClick={() => setActivePage("paynow")} />
               {/* <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} /> */}
-              {/* <SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} /> */}
+              {/*<SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} /> */}
               <SidebarItem icon={<ClipboardList size={18} />}    label="Maintenance Dues" active={activePage === "dues"}        onClick={() => setActivePage("dues")} />
               <SidebarItem icon={<PiggyBank size={18} />}        label="Corpus Fund"     active={activePage === "corpus"}      onClick={() => setActivePage("corpus")} />
               <SidebarItem icon={<FileText size={18} />}        label="Society Rules"   active={activePage === "rules"}       onClick={() => setActivePage("rules")} />
@@ -1138,17 +1136,6 @@ export default function App() {
                       <button className={`toggleBtn ${viewMode === "card" ? "toggleActive" : ""}`} onClick={() => setViewMode("card")}>
                         <LayoutGrid size={14} /> Cards
                       </button>
-                    </div>
-                    <div className="elecFilterGroup">
-                      {[["all", "All"], ["income", "Income"], ["expense", "Expenditure"]].map(([val, label]) => (
-                        <button
-                          key={val}
-                          className={`elecFBtn ${txTypeFilter === val ? "elecFActive" : ""}`}
-                          onClick={() => setTxTypeFilter(val)}
-                        >
-                          {label}
-                        </button>
-                      ))}
                     </div>
                     <button
                       className={`toggleBtn ${mergedByFlat ? "toggleActive" : ""}`}
@@ -1326,7 +1313,7 @@ export default function App() {
           )}
 
           {/* ELECTRICITY TRACKER */}
-          {activePage === "electricity" && <ElectricityTracker />}
+          {activePage === "electricity" && <ElectricityTracker />} 
 
           {/* MAINTENANCE DUES */}
           {activePage === "dues" && <MaintenanceDues />}
@@ -1379,7 +1366,7 @@ export default function App() {
           <div className="mobileNav">
             <div className={`mobileItem ${activePage === "dashboard"   ? "mobileActive" : ""}`} onClick={() => setActivePage("dashboard")}><LayoutDashboard size={20} /><span>Dashboard</span></div>
             <div className={`mobileItem ${activePage === "paynow"      ? "mobileActive" : ""}`} onClick={() => setActivePage("paynow")}><Wallet size={20} /><span>Pay</span></div>
-            {/* <div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div> */}
+            {/*<div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div>*/}
             <div className={`mobileItem ${activePage === "dues"        ? "mobileActive" : ""}`} onClick={() => setActivePage("dues")}><ClipboardList size={20} /><span>Dues</span></div>
             <div className={`mobileItem ${activePage === "corpus"      ? "mobileActive" : ""}`} onClick={() => setActivePage("corpus")}><PiggyBank size={20} /><span>Corpus</span></div>
             <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>
