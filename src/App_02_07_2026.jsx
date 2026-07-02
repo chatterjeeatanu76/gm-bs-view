@@ -814,11 +814,11 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, "0")); // default current month
+  const [month, setMonth] = useState("");
   const [activePage, setActivePage] = useState("dashboard");
   const [historySearch, setHistorySearch] = useState("");
   const [viewMode, setViewMode] = useState("table");
-  const [mergedByFlat, setMergedByFlat] = useState(true); // default merged view
+  const [mergedByFlat, setMergedByFlat] = useState(false);
   const [txTypeFilter, setTxTypeFilter] = useState("all");
   const [darkMode, setDarkMode] = useState(true);
   const dark = darkMode;
