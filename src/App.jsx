@@ -825,6 +825,16 @@ export default function App() {
   const [dashboardMonth, setDashboardMonth] = useState(currentMonth()); // "YYYY-MM", defaults to current month
   const [showOverallModal, setShowOverallModal] = useState(false);
   const [chartRange, setChartRange] = useState("all");
+  const rangeMap = { "6m": 6, "12m": 12, "24m": 24, "all": perMonth.length };
+  const rangeMonths = perMonth.slice(-(rangeMap[chartRange] || perMonth.length));
+  const rangeBarData = {
+    labels: rangeMonths.map((m) => m.label),
+    datasets: [
+      { label: "Income", data: rangeMonths.map((m) => m.inc), backgroundColor: "#3B82F6", borderRadius: 6, borderSkipped: false, order: 2 },
+      { label: "Expense", data: rangeMonths.map((m) => m.exp), backgroundColor: "#EF4444", borderRadius: 6, borderSkipped: false, order: 2 },
+      { label: "Savings (Balance)", data: rangeMonths.map((m) => m.sav), type: "line", borderColor: "#22C55E", backgroundColor: "rgba(34,197,94,.1)", pointBackgroundColor: "#22C55E", pointRadius: 5, tension: 0.4, fill: false, order: 1 },
+    ],
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -1270,19 +1280,8 @@ export default function App() {
               </div>
 
               {/* ── OVERALL VIEW MODAL ── */}
-              {showOverallModal && (() => {
-                const rangeMap = { "6m": 6, "12m": 12, "24m": 24, "all": perMonth.length };
-                const rangeMonths = perMonth.slice(-rangeMap[chartRange]);
-                const rangeBarData = {
-                  labels: rangeMonths.map((m) => m.label),
-                  datasets: [
-                    { label: "Income", data: rangeMonths.map((m) => m.inc), backgroundColor: "#3B82F6", borderRadius: 6, borderSkipped: false, order: 2 },
-                    { label: "Expense", data: rangeMonths.map((m) => m.exp), backgroundColor: "#EF4444", borderRadius: 6, borderSkipped: false, order: 2 },
-                    { label: "Savings (Balance)", data: rangeMonths.map((m) => m.sav), type: "line", borderColor: "#22C55E", backgroundColor: "rgba(34,197,94,.1)", pointBackgroundColor: "#22C55E", pointRadius: 5, tension: 0.4, fill: false, order: 1 },
-                  ],
-                };
-                return (
-                  <div className="modalOverlay" onClick={() => setShowOverallModal(false)}>
+              {showOverallModal && (
+                <div className="modalOverlay" onClick={() => setShowOverallModal(false)}>
                     <div className="modalBox ovBox" onClick={(e) => e.stopPropagation()}>
 
                       {/* Header */}
@@ -1419,8 +1418,7 @@ export default function App() {
 
                     </div>
                   </div>
-                );
-              })()}
+              )}
 
             </>
           )}
