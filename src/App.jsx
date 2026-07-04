@@ -824,6 +824,7 @@ export default function App() {
   const dark = darkMode;
   const [dashboardMonth, setDashboardMonth] = useState(currentMonth()); // "YYYY-MM", defaults to current month
   const [showOverallModal, setShowOverallModal] = useState(false);
+  const [chartRange, setChartRange] = useState("all");
 
   useEffect(() => {
     const load = async () => {
@@ -968,26 +969,79 @@ export default function App() {
   };
 
   // ── Overall View modal: all-time month-wise bar chart ──
+  // Build a sorted list of all unique year-months from transactions
+  const allMonthKeys = [...new Set(
+    [...income, ...expenses]
+      .map((r) => r.date?.slice(0, 7))
+      .filter(Boolean)
+  )].sort();
+
+  // Per-month income/expense/savings for chart
+  const perMonth = allMonthKeys.map((ym) => {
+    const inc = income.filter((r) => r.date?.startsWith(ym)).reduce((a, b) => a + Number(b.amount || 0), 0);
+    const exp = expenses.filter((r) => r.date?.startsWith(ym)).reduce((a, b) => a + Number(b.amount || 0), 0);
+    const [yr, mo] = ym.split("-");
+    const lbl = MONTHS.find(([m]) => m === mo);
+    return { ym, label: lbl ? `${lbl[1].slice(0, 3)} '${yr.slice(2)}` : ym, inc, exp, sav: inc - exp };
+  });
+
+  // Last month totals for % comparison
+  const prevMonthYm = allMonthKeys[allMonthKeys.length - 2] || null;
+  const prevIncome  = prevMonthYm ? income.filter((r) => r.date?.startsWith(prevMonthYm)).reduce((a, b) => a + Number(b.amount || 0), 0) : 0;
+  const prevExpense = prevMonthYm ? expenses.filter((r) => r.date?.startsWith(prevMonthYm)).reduce((a, b) => a + Number(b.amount || 0), 0) : 0;
+  const prevSavings = prevIncome - prevExpense;
+  const lastMonthYm = allMonthKeys[allMonthKeys.length - 1] || null;
+  const lastIncome  = lastMonthYm ? income.filter((r) => r.date?.startsWith(lastMonthYm)).reduce((a, b) => a + Number(b.amount || 0), 0) : 0;
+  const lastExpense = lastMonthYm ? expenses.filter((r) => r.date?.startsWith(lastMonthYm)).reduce((a, b) => a + Number(b.amount || 0), 0) : 0;
+  const lastSavings = lastIncome - lastExpense;
+
+  const pctChange = (curr, prev) => prev === 0 ? null : (((curr - prev) / prev) * 100).toFixed(1);
+  const incPct  = pctChange(lastIncome, prevIncome);
+  const expPct  = pctChange(lastExpense, prevExpense);
+  const savPct  = pctChange(lastSavings, prevSavings);
+  const savRate = allTimeIncome > 0 ? ((allTimeBalance / allTimeIncome) * 100).toFixed(1) : "0.0";
+  const lastSavRate = lastIncome > 0 ? ((lastSavings / lastIncome) * 100).toFixed(1) : "0.0";
+  const prevSavRate = prevIncome > 0 ? ((prevSavings / prevIncome) * 100).toFixed(1) : "0.0";
+  const savRatePct  = pctChange(Number(lastSavRate), Number(prevSavRate));
+
+  // Highest income/expense month
+  const highestIncMonth  = perMonth.reduce((a, b) => b.inc > a.inc ? b : a, { inc: 0, label: "—" });
+  const highestExpMonth  = perMonth.reduce((a, b) => b.exp > a.exp ? b : a, { exp: 0, label: "—" });
+  const avgIncome  = perMonth.length ? Math.round(allTimeIncome / perMonth.length) : 0;
+  const avgExpense = perMonth.length ? Math.round(allTimeExpense / perMonth.length) : 0;
+  const healthScore = Math.min(100, Math.max(0, Math.round(Number(savRate) * 1.5 + (allTimeBalance > 0 ? 25 : 0))));
+  const healthLabel = healthScore >= 80 ? "Excellent" : healthScore >= 60 ? "Good" : healthScore >= 40 ? "Fair" : "Needs Attention";
+
   const overallBarData = {
-    labels: chartMonths.map(([, l]) => l.slice(0, 3)),
+    labels: perMonth.map((m) => m.label),
     datasets: [
       {
         label: "Income",
-        data: chartMonths.map(([m]) =>
-          income.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
-        ),
+        data: perMonth.map((m) => m.inc),
         backgroundColor: "#3B82F6",
-        borderRadius: 8,
+        borderRadius: 6,
         borderSkipped: false,
+        order: 2,
       },
       {
-        label: "Expenditure",
-        data: chartMonths.map(([m]) =>
-          expenses.filter((r) => r.date?.includes(`-${m}-`)).reduce((a, b) => a + Number(b.amount || 0), 0)
-        ),
+        label: "Expense",
+        data: perMonth.map((m) => m.exp),
         backgroundColor: "#EF4444",
-        borderRadius: 8,
+        borderRadius: 6,
         borderSkipped: false,
+        order: 2,
+      },
+      {
+        label: "Savings (Balance)",
+        data: perMonth.map((m) => m.sav),
+        type: "line",
+        borderColor: "#22C55E",
+        backgroundColor: "rgba(34,197,94,.1)",
+        pointBackgroundColor: "#22C55E",
+        pointRadius: 5,
+        tension: 0.4,
+        fill: false,
+        order: 1,
       },
     ],
   };
@@ -1216,43 +1270,157 @@ export default function App() {
               </div>
 
               {/* ── OVERALL VIEW MODAL ── */}
-              {showOverallModal && (
-                <div className="modalOverlay" onClick={() => setShowOverallModal(false)}>
-                  <div className="modalBox" onClick={(e) => e.stopPropagation()}>
-                    <div className="modalHeader">
-                      <div>
-                        <div className="modalTitle">Overall View</div>
-                        <div className="modalSub">All-time totals across every recorded month</div>
+              {showOverallModal && (() => {
+                const rangeMap = { "6m": 6, "12m": 12, "24m": 24, "all": perMonth.length };
+                const rangeMonths = perMonth.slice(-rangeMap[chartRange]);
+                const rangeBarData = {
+                  labels: rangeMonths.map((m) => m.label),
+                  datasets: [
+                    { label: "Income", data: rangeMonths.map((m) => m.inc), backgroundColor: "#3B82F6", borderRadius: 6, borderSkipped: false, order: 2 },
+                    { label: "Expense", data: rangeMonths.map((m) => m.exp), backgroundColor: "#EF4444", borderRadius: 6, borderSkipped: false, order: 2 },
+                    { label: "Savings (Balance)", data: rangeMonths.map((m) => m.sav), type: "line", borderColor: "#22C55E", backgroundColor: "rgba(34,197,94,.1)", pointBackgroundColor: "#22C55E", pointRadius: 5, tension: 0.4, fill: false, order: 1 },
+                  ],
+                };
+                return (
+                  <div className="modalOverlay" onClick={() => setShowOverallModal(false)}>
+                    <div className="modalBox ovBox" onClick={(e) => e.stopPropagation()}>
+
+                      {/* Header */}
+                      <div className="modalHeader">
+                        <div>
+                          <div className="modalTitle">Financial Overview</div>
+                          <div className="modalSub">All financial data across every recorded month</div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div className="ovDateRange">
+                            📅 {perMonth[0]?.label || "—"} – {perMonth[perMonth.length - 1]?.label || "—"}
+                          </div>
+                          <button className="modalCloseBtn" onClick={() => setShowOverallModal(false)}>✕</button>
+                        </div>
                       </div>
-                      <button className="modalCloseBtn" onClick={() => setShowOverallModal(false)}>✕</button>
-                    </div>
+                      <div className="ovLastUpdated">↻ Last updated: Today</div>
 
-                    <div className="kpiGrid" style={{ marginBottom: 20 }}>
-                      <Kpi icon={<TrendingUp size={18} />}   label="Total Income"  value={`₹${fmt(allTimeIncome)}`}  green />
-                      <Kpi icon={<TrendingDown size={18} />} label="Total Expense" value={`₹${fmt(allTimeExpense)}`} red />
-                      <Kpi icon={<Wallet size={18} />}        label="Total Balance" value={`₹${fmt(allTimeBalance)}`} blue />
-                    </div>
+                      {/* 4 KPI cards */}
+                      <div className="ovKpiGrid">
+                        {/* Total Income */}
+                        <div className="ovKpi">
+                          <div className="ovKpiTop">
+                            <div className="ovKpiIcon green"><TrendingUp size={16} /></div>
+                            <span className="ovKpiLabel">Total Income</span>
+                          </div>
+                          <div className="ovKpiValue">₹{fmt(allTimeIncome)}</div>
+                          {incPct && <div className={`ovKpiChange ${Number(incPct) >= 0 ? "up" : "down"}`}>{Number(incPct) >= 0 ? "↑" : "↓"} {Math.abs(incPct)}% vs last month</div>}
+                        </div>
+                        {/* Total Expense */}
+                        <div className="ovKpi">
+                          <div className="ovKpiTop">
+                            <div className="ovKpiIcon red"><TrendingDown size={16} /></div>
+                            <span className="ovKpiLabel">Total Expense</span>
+                          </div>
+                          <div className="ovKpiValue">₹{fmt(allTimeExpense)}</div>
+                          {expPct && <div className={`ovKpiChange ${Number(expPct) <= 0 ? "up" : "down"}`}>{Number(expPct) >= 0 ? "↑" : "↓"} {Math.abs(expPct)}% vs last month</div>}
+                        </div>
+                        {/* Net Savings */}
+                        <div className="ovKpi">
+                          <div className="ovKpiTop">
+                            <div className="ovKpiIcon blue"><Wallet size={16} /></div>
+                            <span className="ovKpiLabel">Net Savings</span>
+                          </div>
+                          <div className="ovKpiValue">₹{fmt(allTimeBalance)}</div>
+                          {savPct && <div className={`ovKpiChange ${Number(savPct) >= 0 ? "up" : "down"}`}>{Number(savPct) >= 0 ? "↑" : "↓"} {Math.abs(savPct)}% vs last month</div>}
+                          {allTimeBalance > 0 && <div className="ovBadge purple">Highest till date</div>}
+                        </div>
+                        {/* Savings Rate */}
+                        <div className="ovKpi">
+                          <div className="ovKpiTop">
+                            <div className="ovKpiIcon purple2"><PiggyBank size={16} /></div>
+                            <span className="ovKpiLabel">Savings Rate</span>
+                          </div>
+                          <div className="ovKpiValue">{savRate}%</div>
+                          {savRatePct && <div className={`ovKpiChange ${Number(savRatePct) >= 0 ? "up" : "down"}`}>{Number(savRatePct) >= 0 ? "↑" : "↓"} {Math.abs(savRatePct)}% vs last month</div>}
+                          <div className="ovBadge green2">{healthLabel}</div>
+                        </div>
+                      </div>
 
-                    <div className="card" style={{ marginBottom: 0 }}>
-                      <div className="cardTitle">Month-wise Income vs Expenditure</div>
-                      <div style={{ height: 220, marginTop: 16 }}>
-                        <Bar data={overallBarData} options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: { legend: { position: "top", labels: { color: dark ? "#94A3B8" : "#475569", boxWidth: 12, padding: 16 } } },
-                          scales: {
-                            x: { ticks: { color: "#64748B" }, grid: { color: "rgba(255,255,255,.04)" } },
-                            y: {
-                              ticks: { color: "#64748B", callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) },
-                              grid: { color: "rgba(255,255,255,.04)" },
+                      {/* Chart */}
+                      <div className="ovChartCard">
+                        <div className="ovChartHeader">
+                          <div>
+                            <div className="ovChartTitle">Income vs Expenditure vs Savings Trend</div>
+                            <div className="ovChartLegend">
+                              <span><span className="ovDot" style={{ background: "#3B82F6" }} />Income</span>
+                              <span><span className="ovDot" style={{ background: "#EF4444" }} />Expense</span>
+                              <span><span className="ovDot" style={{ background: "#22C55E", borderRadius: "50%" }} />Savings (Balance)</span>
+                            </div>
+                          </div>
+                          <div className="ovRangeBtns">
+                            {[["6m","6M"],["12m","12M"],["24m","24M"],["all","All"]].map(([val, lbl]) => (
+                              <button key={val} className={`ovRangeBtn ${chartRange === val ? "ovRangeActive" : ""}`} onClick={() => setChartRange(val)}>{lbl}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ height: 240 }}>
+                          <Bar data={rangeBarData} options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${fmt(ctx.raw)}` } } },
+                            scales: {
+                              x: { ticks: { color: "#64748B", font: { size: 11 } }, grid: { color: "rgba(255,255,255,.04)" } },
+                              y: { ticks: { color: "#64748B", font: { size: 11 }, callback: (v) => "₹" + (v >= 1000 ? Math.round(v / 1000) + "k" : v) }, grid: { color: "rgba(255,255,255,.04)" } },
                             },
-                          },
-                        }} />
+                          }} />
+                        </div>
                       </div>
+
+                      {/* Financial Summary */}
+                      <div className="ovSummary">
+                        <div className="ovSummaryTitle">Financial Summary</div>
+                        <div className="ovSummaryGrid">
+                          <div className="ovSumItem">
+                            <div className="ovSumIcon green"><TrendingUp size={14} /></div>
+                            <div>
+                              <div className="ovSumLabel">Highest Income</div>
+                              <div className="ovSumVal">₹{fmt(highestIncMonth.inc)}</div>
+                              <div className="ovSumSub">{highestIncMonth.label}</div>
+                            </div>
+                          </div>
+                          <div className="ovSumItem">
+                            <div className="ovSumIcon red"><TrendingDown size={14} /></div>
+                            <div>
+                              <div className="ovSumLabel">Highest Expense</div>
+                              <div className="ovSumVal">₹{fmt(highestExpMonth.exp)}</div>
+                              <div className="ovSumSub">{highestExpMonth.label}</div>
+                            </div>
+                          </div>
+                          <div className="ovSumItem">
+                            <div className="ovSumIcon blue"><ClipboardList size={14} /></div>
+                            <div>
+                              <div className="ovSumLabel">Avg Monthly Income</div>
+                              <div className="ovSumVal">₹{fmt(avgIncome)}</div>
+                            </div>
+                          </div>
+                          <div className="ovSumItem">
+                            <div className="ovSumIcon orange"><ClipboardList size={14} /></div>
+                            <div>
+                              <div className="ovSumLabel">Avg Monthly Expense</div>
+                              <div className="ovSumVal">₹{fmt(avgExpense)}</div>
+                            </div>
+                          </div>
+                          <div className="ovSumItem">
+                            <div className="ovSumIcon purple2"><CheckCircle size={14} /></div>
+                            <div>
+                              <div className="ovSumLabel">Financial Health</div>
+                              <div className="ovSumVal" style={{ color: healthScore >= 80 ? "#22C55E" : healthScore >= 60 ? "#F59E0B" : "#EF4444" }}>{healthLabel}</div>
+                              <div className="ovSumSub">Score: {healthScore} / 100</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
             </>
           )}
@@ -1641,6 +1809,52 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .lightMode .mergeBtn{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#64748B !important;}
 .lightMode .mergeBtn:hover{background:#F1F5F9 !important;color:#0F172A !important;}
 .lightMode .mergeBtnActive{background:linear-gradient(135deg,#7C3AED,#A855F7) !important;color:white !important;border-color:transparent !important;}
+
+/* ── Overall View Modal Styles ── */
+.ovBox{max-width:960px;overflow-y:auto;max-height:92vh;}
+.ovLastUpdated{color:#64748B;font-size:12px;margin-bottom:20px;}
+.ovDateRange{display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:13px;color:#94A3B8;}
+.ovKpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.ovKpi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px 16px;}
+.ovKpiTop{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.ovKpiIcon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ovKpiIcon.purple2{background:rgba(139,92,246,.15);color:#8B5CF6;}
+.ovKpiIcon.orange{background:rgba(249,115,22,.15);color:#F97316;}
+.ovKpiLabel{color:#64748B;font-size:12px;font-weight:500;}
+.ovKpiValue{font-size:20px;font-weight:800;color:white;margin-bottom:6px;}
+.ovKpiChange{font-size:12px;font-weight:600;margin-bottom:4px;}
+.ovKpiChange.up{color:#22C55E;}
+.ovKpiChange.down{color:#EF4444;}
+.ovBadge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;margin-top:4px;}
+.ovBadge.purple{background:rgba(139,92,246,.15);color:#A78BFA;}
+.ovBadge.green2{background:rgba(34,197,94,.12);color:#22C55E;}
+.ovChartCard{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px 18px;margin-bottom:16px;}
+.ovChartHeader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.ovChartTitle{font-size:15px;font-weight:700;color:white;margin-bottom:6px;}
+.ovChartLegend{display:flex;gap:14px;font-size:12px;color:#94A3B8;}
+.ovChartLegend span{display:flex;align-items:center;gap:5px;}
+.ovDot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.ovRangeBtns{display:flex;background:rgba(255,255,255,.05);border-radius:10px;padding:3px;gap:2px;}
+.ovRangeBtn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;color:#64748B;background:transparent;border:none;cursor:pointer;transition:.15s;}
+.ovRangeBtn:hover{color:white;}
+.ovRangeActive{background:#22C55E;color:white !important;}
+.ovSummary{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px 18px;}
+.ovSummaryTitle{font-size:15px;font-weight:700;color:white;margin-bottom:14px;}
+.ovSummaryGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.ovSumItem{display:flex;align-items:flex-start;gap:10px;}
+.ovSumIcon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ovSumIcon.orange{background:rgba(249,115,22,.15);color:#F97316;}
+.ovSumLabel{color:#64748B;font-size:11px;margin-bottom:3px;}
+.ovSumVal{font-size:14px;font-weight:800;color:white;}
+.ovSumSub{font-size:11px;color:#64748B;margin-top:2px;}
+
+/* Light mode for Overall View */
+.lightMode .ovKpi,.lightMode .ovChartCard,.lightMode .ovSummary{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;}
+.lightMode .ovKpiValue,.lightMode .ovSumVal,.lightMode .ovChartTitle,.lightMode .ovSummaryTitle{color:#0F172A !important;}
+.lightMode .ovDateRange{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;color:#475569 !important;}
+.lightMode .ovRangeBtns{background:#F1F5F9 !important;}
+.lightMode .ovRangeBtn{color:#64748B !important;}
+.lightMode .ovRangeActive{background:#22C55E !important;color:white !important;}
 .lightMode .toggleActive{background:#EFF6FF !important;color:#2563EB !important;border-color:#93C5FD !important;}
 .lightMode .viewToggle{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;}
 .lightMode .refreshBtn,.lightMode .elecReset{background:#EFF6FF !important;border:1px solid #BFDBFE !important;color:#2563EB !important;}

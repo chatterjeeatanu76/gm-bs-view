@@ -814,11 +814,12 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [month, setMonth] = useState("");
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, "0")); // default current month
   const [activePage, setActivePage] = useState("dashboard");
   const [historySearch, setHistorySearch] = useState("");
   const [viewMode, setViewMode] = useState("table");
-  const [mergedByFlat, setMergedByFlat] = useState(false);
+  const [mergedByFlat, setMergedByFlat] = useState(true); // default merged view
+  const [txTypeFilter, setTxTypeFilter] = useState("all");
   const [darkMode, setDarkMode] = useState(true);
   const dark = darkMode;
   const [dashboardMonth, setDashboardMonth] = useState(currentMonth()); // "YYYY-MM", defaults to current month
@@ -875,7 +876,8 @@ export default function App() {
     }));
   }, [filtered]);
 
-  const displayRows = mergedByFlat ? mergedFiltered : filtered;
+  const baseRows = mergedByFlat ? mergedFiltered : filtered;
+  const displayRows = txTypeFilter === "all" ? baseRows : baseRows.filter((r) => r.type === txTypeFilter);
 
   const income = transactions.filter((x) => x.type === "income");
   const expenses = transactions.filter((x) => x.type === "expense");
@@ -1007,7 +1009,7 @@ export default function App() {
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard"      active={activePage === "dashboard"}   onClick={() => setActivePage("dashboard")} />
               <SidebarItem icon={<Wallet size={18} />}          label="Pay Now"         active={activePage === "paynow"}      onClick={() => setActivePage("paynow")} />
               {/* <SidebarItem icon={<History size={18} />}         label="Payment History" active={activePage === "history"}     onClick={() => setActivePage("history")} /> */}
-              {/*<SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} /> */}
+              {/* <SidebarItem icon={<Zap size={18} />}             label="Electricity"     active={activePage === "electricity"} onClick={() => setActivePage("electricity")} /> */}
               <SidebarItem icon={<ClipboardList size={18} />}    label="Maintenance Dues" active={activePage === "dues"}        onClick={() => setActivePage("dues")} />
               <SidebarItem icon={<PiggyBank size={18} />}        label="Corpus Fund"     active={activePage === "corpus"}      onClick={() => setActivePage("corpus")} />
               <SidebarItem icon={<FileText size={18} />}        label="Society Rules"   active={activePage === "rules"}       onClick={() => setActivePage("rules")} />
@@ -1123,12 +1125,41 @@ export default function App() {
 
               </div>
               <div className="tableCard">
-                <div className="tableHeader">
-                  <div>
-                    <div className="tableTitle">Transactions</div>
-                    <div className="tableSub">Monthly overview of all transactions</div>
+                <div className="tableHeaderNew">
+                  <div className="tableHeaderTop">
+                    <div>
+                      <div className="tableTitle">Transactions</div>
+                      <div className="tableSub">Monthly overview of all transactions</div>
+                    </div>
+                    <div className="txTypePills">
+                      {[["all", "All"], ["income", "Income"], ["expense", "Expenditure"]].map(([val, label]) => (
+                        <button
+                          key={val}
+                          className={`txPill ${txTypeFilter === val ? "txPillActive" : ""}`}
+                          onClick={() => setTxTypeFilter(val)}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="tableHeaderRight">
+
+                  <div className="tableHeaderBottom">
+                    <div className="search" style={{ flex: 1, maxWidth: 320 }}>
+                      <Search size={15} />
+                      <input placeholder="Search Flat No." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    </div>
+                    <select value={month} onChange={(e) => setMonth(e.target.value)}>
+                      <option value="">All Months</option>
+                      {MONTHS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                    <button
+                      className={`mergeBtn ${mergedByFlat ? "mergeBtnActive" : ""}`}
+                      onClick={() => setMergedByFlat((v) => !v)}
+                      title="Combine same flat + date entries into one row"
+                    >
+                      {mergedByFlat ? <CheckCircle size={14} /> : <ClipboardList size={14} />} Merged by Flat
+                    </button>
                     <div className="viewToggle">
                       <button className={`toggleBtn ${viewMode === "table" ? "toggleActive" : ""}`} onClick={() => setViewMode("table")}>
                         <Table size={14} /> Table
@@ -1136,23 +1167,6 @@ export default function App() {
                       <button className={`toggleBtn ${viewMode === "card" ? "toggleActive" : ""}`} onClick={() => setViewMode("card")}>
                         <LayoutGrid size={14} /> Cards
                       </button>
-                    </div>
-                    <button
-                      className={`toggleBtn ${mergedByFlat ? "toggleActive" : ""}`}
-                      onClick={() => setMergedByFlat((v) => !v)}
-                      title="Combine same flat + date entries into one row"
-                    >
-                      {mergedByFlat ? <CheckCircle size={14} /> : <ClipboardList size={14} />} Merged by flat
-                    </button>
-                    <div className="filters">
-                      <div className="search">
-                        <Search size={15} />
-                        <input placeholder="Search transactions..." value={search} onChange={(e) => setSearch(e.target.value)} />
-                      </div>
-                      <select value={month} onChange={(e) => setMonth(e.target.value)}>
-                        <option value="">All Months</option>
-                        {MONTHS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
                     </div>
                   </div>
                 </div>
@@ -1313,7 +1327,7 @@ export default function App() {
           )}
 
           {/* ELECTRICITY TRACKER */}
-          {activePage === "electricity" && <ElectricityTracker />} 
+          {activePage === "electricity" && <ElectricityTracker />}
 
           {/* MAINTENANCE DUES */}
           {activePage === "dues" && <MaintenanceDues />}
@@ -1366,7 +1380,7 @@ export default function App() {
           <div className="mobileNav">
             <div className={`mobileItem ${activePage === "dashboard"   ? "mobileActive" : ""}`} onClick={() => setActivePage("dashboard")}><LayoutDashboard size={20} /><span>Dashboard</span></div>
             <div className={`mobileItem ${activePage === "paynow"      ? "mobileActive" : ""}`} onClick={() => setActivePage("paynow")}><Wallet size={20} /><span>Pay</span></div>
-            {/*<div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div>*/}
+            {/* <div className={`mobileItem ${activePage === "electricity" ? "mobileActive" : ""}`} onClick={() => setActivePage("electricity")}><Zap size={20} /><span>Electricity</span></div> */}
             <div className={`mobileItem ${activePage === "dues"        ? "mobileActive" : ""}`} onClick={() => setActivePage("dues")}><ClipboardList size={20} /><span>Dues</span></div>
             <div className={`mobileItem ${activePage === "corpus"      ? "mobileActive" : ""}`} onClick={() => setActivePage("corpus")}><PiggyBank size={20} /><span>Corpus</span></div>
             <div className={`mobileItem ${activePage === "rules"       ? "mobileActive" : ""}`} onClick={() => setActivePage("rules")}><FileText size={20} /><span>Rules</span></div>
@@ -1430,6 +1444,16 @@ body{font-family:Inter,sans-serif;background:#0F172A;color:#E2E8F0;}
 .blue{background:rgba(59,130,246,.15);color:#3B82F6;}
 .tableCard{margin-top:28px;}
 .tableHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.tableHeaderNew{margin-bottom:24px;}
+.tableHeaderTop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.txTypePills{display:flex;background:rgba(255,255,255,.04);border-radius:12px;padding:4px;gap:2px;height:fit-content;}
+.txPill{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;color:#64748B;background:transparent;border:none;cursor:pointer;transition:.15s;}
+.txPill:hover{color:#CBD5E1;}
+.txPillActive{background:#1D4ED8;color:white;}
+.tableHeaderBottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.mergeBtn{display:flex;align-items:center;gap:6px;padding:10px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#94A3B8;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;}
+.mergeBtn:hover{background:rgba(255,255,255,.08);color:white;}
+.mergeBtnActive{background:linear-gradient(135deg,#7C3AED,#A855F7);border-color:transparent;color:white;}
 .tableHeaderRight{display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 .tableTitle{font-size:24px;font-weight:800;}
 .tableSub{color:#94A3B8;margin-top:6px;}
@@ -1610,6 +1634,13 @@ select{background:#111827;border:none;color:white;border-radius:18px;padding:14p
 .lightMode .elecMonthBadge{background:#EFF6FF !important;color:#2563EB !important;}
 .lightMode .toggleBtn{color:#475569 !important;border-color:#E2E8F0 !important;background:#F8FAFC !important;}
 .lightMode .toggleBtn:hover{background:#F1F5F9 !important;color:#0F172A !important;}
+.lightMode .txTypePills{background:#F1F5F9 !important;}
+.lightMode .txPill{color:#64748B !important;}
+.lightMode .txPill:hover{color:#0F172A !important;}
+.lightMode .txPillActive{background:#2563EB !important;color:white !important;}
+.lightMode .mergeBtn{background:#F8FAFC !important;border:1px solid #E2E8F0 !important;color:#64748B !important;}
+.lightMode .mergeBtn:hover{background:#F1F5F9 !important;color:#0F172A !important;}
+.lightMode .mergeBtnActive{background:linear-gradient(135deg,#7C3AED,#A855F7) !important;color:white !important;border-color:transparent !important;}
 .lightMode .toggleActive{background:#EFF6FF !important;color:#2563EB !important;border-color:#93C5FD !important;}
 .lightMode .viewToggle{background:#F1F5F9 !important;border:1px solid #E2E8F0 !important;}
 .lightMode .refreshBtn,.lightMode .elecReset{background:#EFF6FF !important;border:1px solid #BFDBFE !important;color:#2563EB !important;}
